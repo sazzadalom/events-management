@@ -5,7 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 
 import com.alom.dao.entities.EventMasterEntity;
-import com.alom.model.EventMasterDto;
+import com.alom.dto.EventMasterDto;
 
 @Mapper(componentModel = "spring")
 public interface EventMapperService {

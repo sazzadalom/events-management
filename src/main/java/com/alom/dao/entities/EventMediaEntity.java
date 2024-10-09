@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,29 +22,33 @@ import lombok.ToString;
 @Getter
 @ToString
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "event_master")
-public class EventMasterEntity {
+@Table(name = "event_media")
+public class EventMediaEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "event_id")
-	private Long eventId;
-
-	@Column(name = "event_name")
-	private String eventName;
-
-	@Column(name = "event_url")
-	private String eventUrl;
-
-	@Column(name = "event_date")
-	private LocalDateTime eventDate;
-
-	@Column(name = "event_created_at")
-	private LocalDateTime eventCreatedAt;
+	@Column(name = "file_id")
+	private Long fileId;
+		
+	@Column(name = "file_type")
+	private String fileType;
 	
-	@OneToOne(mappedBy = "eventMasterEntity")
-    private EventMediaEntity eventMediaEntity;
+	@Column(name = "file_name")
+	private String fileName;
+	
+	@Lob
+	@Column(name = "file_data", columnDefinition = "LONGBLOB")
+	private byte[] fileData;
+	
+	@Column(name = "uploaded_at")
+	private LocalDateTime uploadedAt;
+	
+	@OneToOne
+	@JoinColumn(name = "event_id")
+    private EventMasterEntity eventMasterEntity;
+	
+	
 }

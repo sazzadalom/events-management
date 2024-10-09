@@ -1,4 +1,4 @@
-package com.alom.repository;
+package com.alom.dao.repositories;
 
 import java.time.LocalDateTime;
 

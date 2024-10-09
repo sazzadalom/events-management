@@ -4,7 +4,9 @@ import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 
-import com.alom.model.EventMasterDto;
+import com.alom.dto.EventMasterDto;
+import com.alom.model.EventModel;
+import com.alom.payload.GenericResponse;
 
 public interface EventService {
 
@@ -13,6 +15,8 @@ public interface EventService {
 	public EventMasterDto getEventByName(String eventName);
 
 	public Page<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size);
+
+	public GenericResponse addOrUpdateEvent(EventModel eventModel);
 	
 
 }

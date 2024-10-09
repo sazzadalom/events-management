@@ -15,14 +15,11 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventMasterDto {
-	private Long eventId;
-	
-	private String eventName;
-	
-	private String eventUrl;
-	
+public class EventModel {
+	private String EventName;
 	private LocalDateTime eventDate;
-	
-	private LocalDateTime eventCreatedAt;
+	private String eventType;
+	private String imagePath;
+	private String attendeePath;
+	private String eventWebLink;
 }
