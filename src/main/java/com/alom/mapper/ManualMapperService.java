@@ -1,14 +1,17 @@
-package com.alom.utility;
+package com.alom.mapper;
 
 import java.io.InputStream;
 import java.sql.Blob;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import com.alom.dao.entities.EventMasterEntity;
+import com.alom.dto.AttendeeDto;
 import com.alom.dto.EventMasterDto;
 import com.alom.dto.EventMediaDto;
 
-public class MediaUtility {
+public class ManualMapperService {
 
 	public static EventMasterDto convertToDto(EventMasterEntity entity) {
         EventMasterDto dto = new EventMasterDto();
@@ -41,8 +44,15 @@ public class MediaUtility {
             }
 
             
-            dto.setEventMediaEntity(mediaDTO);
+            dto.setEventMedia(mediaDTO);
         }
+        
+        List<AttendeeDto> attendeeDtoList= new ArrayList<>();
+        entity.getEventAttendeeEntityList().forEach(attendee -> {
+        	attendeeDtoList .add (new AttendeeDto(attendee.getAttId(),attendee.getAttName(),attendee.getBusinessTitle(),attendee.getCity(),attendee.getContactNumber()));
+        	
+        });
+        dto.setAttendeeList(attendeeDtoList);
 
         return dto;
     }

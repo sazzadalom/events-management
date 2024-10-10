@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.rowset.serial.SerialBlob;
 
@@ -34,24 +35,20 @@ import com.alom.configuration.properties.ExcelProperties;
 import com.alom.dao.entities.EventAttendeeEntity;
 import com.alom.dao.entities.EventMasterEntity;
 import com.alom.dao.entities.EventMediaEntity;
-import com.alom.dao.repositories.EventAttendeeRepository;
 import com.alom.dao.repositories.EventMasterRepository;
-import com.alom.dao.repositories.EventMediaRepository;
+import com.alom.dto.AttendeeDto;
 import com.alom.dto.EventMasterDto;
 import com.alom.exception.EntityNotFoundException;
-import com.alom.mapper.EventMapperService;
+import com.alom.mapper.ManualMapperService;
 import com.alom.model.EventModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
-import com.alom.utility.ExcelUtility;
-import com.alom.utility.MediaUtility;
+import com.alom.utility.ExcelHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
-
-
 
 @Log4j2
 @Service
@@ -59,18 +56,11 @@ import lombok.extern.log4j.Log4j2;
 public class EventServiceImpl implements EventService {
 
 	private final EventMasterRepository eventMasterRepository;
-	private final EventMediaRepository eventMediaRepository;
-	private final EventAttendeeRepository attendeeRepository;
-	private final EventMapperService eventMapperService;
 	private final ExcelProperties excelProperties;
 
-	public EventServiceImpl(EventMasterRepository eventMasterRepository, EventMediaRepository eventMediaRepository,
-			EventAttendeeRepository attendeeRepository, EventMapperService eventMapperService,
-			ExcelProperties excelProperties) {
+	
+	public EventServiceImpl(EventMasterRepository eventMasterRepository, ExcelProperties excelProperties) {
 		this.eventMasterRepository = eventMasterRepository;
-		this.eventMediaRepository = eventMediaRepository;
-		this.attendeeRepository = attendeeRepository;
-		this.eventMapperService = eventMapperService;
 		this.excelProperties = excelProperties;
 	}
 
@@ -81,7 +71,7 @@ public class EventServiceImpl implements EventService {
 		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findAll(pageable);
 		log.debug("eventEntityPage: {}", eventEntityPage);
 		
-		 Page<EventMasterDto> entityPage = eventEntityPage.map(MediaUtility::convertToDto);
+		 Page<EventMasterDto> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
 		 
 		 // Create the custom response
         PaginationResponse<EventMasterDto> response = new PaginationResponse<>(
@@ -89,7 +79,14 @@ public class EventServiceImpl implements EventService {
                 entityPage.getContent(),
                 entityPage.getTotalPages()
         );
+        List<EventMasterDto> eventMasterDtoList = response.getData();
+       List<AttendeeDto> attendeeDtoList = eventMasterDtoList.stream().map(e -> e.getAttendeeList()).collect(Collectors.toList()).stream().flatMap(List::stream).collect(Collectors.toList());
        
+        try {
+			ExcelHelper.writeAttendeesToExcel(attendeeDtoList, "D:/media/attendees.xlsx", excelProperties.getAttendeeUploadHeaders());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return response; // MapStruct will handle mapping of each
 																				// page element
 	}
@@ -97,7 +94,7 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public EventMasterDto getEventByName(String eventName) {
 		EventMasterEntity eventMasterEntity = eventMasterRepository.findByEventName(eventName);
-		return MediaUtility.convertToDto(eventMasterEntity);
+		return ManualMapperService.convertToDto(eventMasterEntity);
 	}
 
 	@Override
@@ -112,7 +109,7 @@ public class EventServiceImpl implements EventService {
 		// Fetch the events within the date range
 		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromDateTime, toDateTime,pageRequest);
 		
-		Page<EventMasterDto> entityPage = eventEntityPage.map(MediaUtility::convertToDto);
+		Page<EventMasterDto> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
 		 
 		 // Create the custom response
         PaginationResponse<EventMasterDto> response = new PaginationResponse<>(
@@ -157,9 +154,9 @@ public class EventServiceImpl implements EventService {
 			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getEventType())
 					.fileName(fileName).fileData(blob).uploadedAt(LocalDateTime.now()).build();
 
-			ExcelUtility.validateFileExtention(multipartFile.getOriginalFilename());
+			ExcelHelper.validateFileExtention(multipartFile.getOriginalFilename());
 
-			ExcelUtility.validateHeaderContents(workbook, excelProperties.getAttendeeUploadHeaders());
+			ExcelHelper.validateHeaderContents(workbook, excelProperties.getAttendeeUploadHeaders());
 
 			List<EventAttendeeEntity> eventAttendeeEntityList = this.takeInputDataFromExcel(workbook);
 			

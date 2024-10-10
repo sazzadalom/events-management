@@ -1,6 +1,7 @@
 package com.alom.utility;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,12 +15,13 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.alom.dto.AttendeeDto;
 import com.alom.exception.ExcelFileReadingException;
 import com.alom.exception.FileNotFoundException;
 import com.alom.model.AttendeeModel;
 
 
-public class ExcelUtility {
+public class ExcelHelper {
 	
 	
 	public static void validateFileExtention(String originalFilename) {
@@ -95,5 +97,42 @@ public class ExcelUtility {
 	        return attendees;
 	    }
 	 
-	 
+	 /**
+	  * <p> write a excel file using attendees data that are added while creating events</p>
+	  * @param attendees
+	  * @param filePath
+	  * @param headerList
+	  * @throws IOException
+	  */
+	 public static void writeAttendeesToExcel(List<AttendeeDto> attendees, String filePath, List<String> headerList) throws IOException {
+		 
+	        Workbook workbook = new XSSFWorkbook(); // Create a new workbook
+	        Sheet sheet = workbook.createSheet("Attendees"); // Create a sheet
+
+	        // Create header row
+	        Row headerRow = sheet.createRow(0);
+	        
+	        for (int i = 0; i < headerList.size(); i++) {
+	            Cell cell = headerRow.createCell(i);
+	            cell.setCellValue(headerList.get(i));
+	        }
+
+	        // Fill in attendee data
+	        for (int i = 0; i < attendees.size(); i++) {
+	            AttendeeDto attendee = attendees.get(i);
+	            Row row = sheet.createRow(i + 1); // Start from the second row
+
+	            row.createCell(0).setCellValue(attendee.getName());
+	            row.createCell(1).setCellValue(attendee.getContactNumber());
+	            row.createCell(2).setCellValue(attendee.getBusinessTitle());
+	            row.createCell(3).setCellValue(attendee.getCity());
+	        }
+
+	        // Write the output to a file
+	        try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+	            workbook.write(fileOut);
+	        } finally {
+	            workbook.close(); // Close the workbook
+	        }
+	    } 
 }

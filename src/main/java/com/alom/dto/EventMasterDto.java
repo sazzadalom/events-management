@@ -2,6 +2,7 @@ package com.alom.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,8 @@ public class EventMasterDto {
     private String eventUrl;
     private LocalDate eventDate;
     private LocalDateTime eventCreatedAt;
-    private EventMediaDto eventMediaEntity;
+    private EventMediaDto eventMedia;
+    private List<AttendeeDto> attendeeList;
 
 }
 

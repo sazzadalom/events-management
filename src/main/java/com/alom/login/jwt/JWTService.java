@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,9 @@ import io.jsonwebtoken.Jwts;
 @Service
 public class JWTService {
 	
+
+	@Value("${expary.time}")
+	private int exparyTime;
 	private SecretKey secretKey ;
 	
 	public JWTService() {
@@ -42,7 +46,7 @@ public class JWTService {
 				.add(claims)
 				.subject(username)
 				.issuedAt(new Date(System.currentTimeMillis()))
-				.expiration(new Date(System.currentTimeMillis() + 60 * 60 * 600))
+				.expiration(new Date(System.currentTimeMillis() + exparyTime * 60 * 1000))
 				.and()
 				.signWith(secretKey)
 				.compact();
