@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.alom.dto.EventMasterDto;
+import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
 
@@ -39,11 +41,10 @@ public class EventApi {
 	}
 
 	@GetMapping("/events")
-	public Page<EventMasterDto> getPaginatedEvents(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size) {
+	public PaginationResponse<EventMasterDto> getPaginatedEvents(Pageable pageable) {
 		
-		log.debug("/get/request/api/events: {}", page);
-		Page<EventMasterDto> response = eventService.getAllEvents(page, size);
+		log.debug("/get/request/api/events: {}", pageable);
+		PaginationResponse<EventMasterDto> response = eventService.getAllEvents(pageable);
 		log.debug("/get/response/api/events: {}", response);
 		
 		return response;
@@ -65,10 +66,10 @@ public class EventApi {
 	}
 	
 	@GetMapping("/events/search-date")
-	public Page<EventMasterDto> viewEventByName(@RequestParam LocalDate fromEventDate, @RequestParam LocalDate uptoEventDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+	public PaginationResponse<EventMasterDto> viewEventByDate(@RequestParam LocalDate fromEventDate, @RequestParam LocalDate uptoEventDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-date-range: {} : {}" , fromEventDate, uptoEventDate);
 		
-		 Page<EventMasterDto> pageResponse = eventService.getEventBetween(fromEventDate,uptoEventDate,page,size);
+		PaginationResponse<EventMasterDto> pageResponse = eventService.getEventBetween(fromEventDate,uptoEventDate,page,size);
 		 log.debug("/get/response/api/events/search-date-range: {} " , pageResponse);
 		 
 		 return pageResponse;

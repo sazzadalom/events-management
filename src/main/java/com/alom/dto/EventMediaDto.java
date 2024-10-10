@@ -1,6 +1,5 @@
 package com.alom.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
@@ -16,13 +15,10 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventMasterDto {
-    private Long eventId;
-    private String eventName;
-    private String eventUrl;
-    private LocalDate eventDate;
-    private LocalDateTime eventCreatedAt;
-    private EventMediaDto eventMediaEntity;
-
+public class EventMediaDto {
+	private Long fileId;
+    private String fileType;
+    private String fileName;
+    private LocalDateTime uploadedAt;
+    private String fileData; // Add this field for the Base64-encoded data
 }
-

@@ -1,9 +1,12 @@
 package com.alom.dao.entities;
 
+import java.sql.Blob;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,23 +35,23 @@ public class EventMediaEntity {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "file_id")
 	private Long fileId;
-		
+
 	@Column(name = "file_type")
 	private String fileType;
-	
+
 	@Column(name = "file_name")
 	private String fileName;
-	
+
 	@Lob
+	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "file_data", columnDefinition = "LONGBLOB")
-	private byte[] fileData;
-	
+	private Blob fileData; // Using Blob for large data instead of byte[]
+
 	@Column(name = "uploaded_at")
 	private LocalDateTime uploadedAt;
-	
+
 	@OneToOne
 	@JoinColumn(name = "event_id")
-    private EventMasterEntity eventMasterEntity;
-	
-	
+	private EventMasterEntity eventMasterEntity;
+
 }

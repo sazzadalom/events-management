@@ -21,4 +21,7 @@ public class ApiResponseMessage {
 	public static final Object JSON_MAPPING_ERROR = "json mapping error";
 	public static final Object MESSAGE_NOT_REDABLE = "message is not readable";
 	public static final String METHOD_NOT_ALLLOWED = "method is not allowed";
+	public static final String USER_REGISTERED_SUCCESSFULLY = "user has been registered successfully.";
+	public static final String USER_REGISTRATION_FAILED = "user is not registered";
+	public static final String USER_ALREADY_EXIST = "user details already exist, please login";
 }

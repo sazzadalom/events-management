@@ -10,7 +10,7 @@ import com.alom.dao.entities.EventMasterEntity;
 
 public interface EventMasterRepository extends JpaRepository<EventMasterEntity, Long> {
 
-    Page<EventMasterEntity> findAll(Pageable pageable);  // Add for pageable support
+	Page<EventMasterEntity> findAll(Pageable pageable);  
 
 	EventMasterEntity findByEventName(String eventName);
 	

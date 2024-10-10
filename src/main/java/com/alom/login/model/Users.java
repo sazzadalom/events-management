@@ -21,11 +21,20 @@ import lombok.ToString;
 @Entity
 public class Users {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "userid")
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "user_id")
 	private Long userId;
+	
+	@Column(name = "username")
 	private String username;
-	private String usrpassword;
-	private String usrrole;
+	
+	@Column(name = "user_password")
+	private String userPassword;
+	
+	@Column(name = "user_role")
+	private String userRole;
+	
+	@Column(name = "user_type")
+	private String userType;
 
 }

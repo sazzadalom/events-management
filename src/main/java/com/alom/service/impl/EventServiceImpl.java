@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.sql.rowset.serial.SerialBlob;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -22,6 +26,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,16 +41,19 @@ import com.alom.dto.EventMasterDto;
 import com.alom.exception.EntityNotFoundException;
 import com.alom.mapper.EventMapperService;
 import com.alom.model.EventModel;
+import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
 import com.alom.utility.ExcelUtility;
+import com.alom.utility.MediaUtility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.log4j.Log4j2;
 
 
 
-
+@Log4j2
 @Service
 @Transactional
 public class EventServiceImpl implements EventService {
@@ -67,27 +75,33 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public Page<EventMasterDto> getAllEvents(int page, int size) {
-
-		// Create a PageRequest object
-		PageRequest pageRequest = PageRequest.of(page, size);
+	public PaginationResponse<EventMasterDto> getAllEvents(Pageable pageable) {
 
 		// Fetch paginated EventMasterEntity
-		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findAll(pageRequest);
-
-		// Map the entity to DTO and return
-		return eventEntityPage.map(eventMapperService::mappedToEventMasterDto); // MapStruct will handle mapping of each
+		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findAll(pageable);
+		log.debug("eventEntityPage: {}", eventEntityPage);
+		
+		 Page<EventMasterDto> entityPage = eventEntityPage.map(MediaUtility::convertToDto);
+		 
+		 // Create the custom response
+        PaginationResponse<EventMasterDto> response = new PaginationResponse<>(
+                entityPage.getTotalElements(),
+                entityPage.getContent(),
+                entityPage.getTotalPages()
+        );
+       
+		return response; // MapStruct will handle mapping of each
 																				// page element
 	}
 
 	@Override
 	public EventMasterDto getEventByName(String eventName) {
 		EventMasterEntity eventMasterEntity = eventMasterRepository.findByEventName(eventName);
-		return eventMapperService.mappedToEventMasterDto(eventMasterEntity);
+		return MediaUtility.convertToDto(eventMasterEntity);
 	}
 
 	@Override
-	public Page<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size) {
+	public PaginationResponse<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size) {
 		// Convert LocalDate to LocalDateTime (if your eventDate is LocalDateTime)
 		LocalDateTime fromDateTime = fromEventDate.atStartOfDay();
 		LocalDateTime toDateTime = uptoEventDate.atTime(23, 59, 59); // Include the whole day
@@ -96,11 +110,19 @@ public class EventServiceImpl implements EventService {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
 		// Fetch the events within the date range
-		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromDateTime, toDateTime,
-				pageRequest);
+		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromDateTime, toDateTime,pageRequest);
+		
+		Page<EventMasterDto> entityPage = eventEntityPage.map(MediaUtility::convertToDto);
+		 
+		 // Create the custom response
+        PaginationResponse<EventMasterDto> response = new PaginationResponse<>(
+                entityPage.getTotalElements(),
+                entityPage.getContent(),
+                entityPage.getTotalPages()
+        );
+       
+		return response; // MapStruct will handle mapping of each
 
-		// Map the entity to DTO and return
-		return eventEntityPage.map(eventMapperService::mappedToEventMasterDto);
 	}
 
 	@Override
@@ -127,9 +149,13 @@ public class EventServiceImpl implements EventService {
 						.eventCreatedAt(LocalDateTime.now()).build();
 			}
 			 
-
+			/**
+			 * Set data as Blob instate of byte[] for fast retrival 
+			 */
+			Blob blob = new SerialBlob(data);
+			
 			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getEventType())
-					.fileName(fileName).fileData(data).uploadedAt(LocalDateTime.now()).build();
+					.fileName(fileName).fileData(blob).uploadedAt(LocalDateTime.now()).build();
 
 			ExcelUtility.validateFileExtention(multipartFile.getOriginalFilename());
 
@@ -149,7 +175,7 @@ public class EventServiceImpl implements EventService {
 			eventMasterRepository.save(eventMasterEntity);
 			
 			
-		} catch (IOException ioException) {
+		} catch (IOException | SQLException ioException) {
 			System.err.println(ioException.getMessage());
 			ioException.getStackTrace();
 		}
