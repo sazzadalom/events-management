@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Configuration status="debug">
+	<Properties>
+		<Property name="LOG_DIR">/D:/Logs/</Property>
+		<Property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss,SSS} : %X{log-trace-id} : %-6p : %F:%L : %m%n</Property>
+	</Properties>
+
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${PATTERN}" />
+		</Console>
+
+		<RollingFile name="file-api" fileName="${LOG_DIR}/eventmanageapp.log" filePattern="${LOG_DIR}/$${date:yyyy-MM}/eventmanageapp-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+			<PatternLayout>
+				<Pattern>${PATTERN}</Pattern>
+			</PatternLayout>
+
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+			</Policies>
+			<DefaultRolloverStrategy max="5" />
+		</RollingFile>
+		
+	</Appenders>
+
+	<Loggers>
+		<Logger name="com.alom" level="debug" additivity="false" includeLocation="true">
+			<AppenderRef ref="file-api" />
+			<AppenderRef ref="console" />
+		</Logger>
+		
+		<Root level="info" includeLocation="true">
+			<AppenderRef ref="file-api" />
+			<AppenderRef ref="console" />
+		</Root>
+	</Loggers>
+</Configuration>

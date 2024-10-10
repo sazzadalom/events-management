@@ -17,7 +17,9 @@ import lombok.ToString;
 @AllArgsConstructor
 public class EventModel {
 	private String EventName;
-	private LocalDateTime eventDate;
+	
+	private String eventDate;
+	private LocalDateTime eventDateZone;
 	private String eventType;
 	private String imagePath;
 	private String attendeePath;

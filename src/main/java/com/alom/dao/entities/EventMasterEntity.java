@@ -1,12 +1,16 @@
 package com.alom.dao.entities;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -38,11 +42,14 @@ public class EventMasterEntity {
 	private String eventUrl;
 
 	@Column(name = "event_date")
-	private LocalDateTime eventDate;
+	private LocalDate eventDate;
 
 	@Column(name = "event_created_at")
 	private LocalDateTime eventCreatedAt;
 	
-	@OneToOne(mappedBy = "eventMasterEntity")
+	@OneToOne(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL)
     private EventMediaEntity eventMediaEntity;
+	
+	@OneToMany(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventAttendeeEntity> eventAttendeeEntityList;
 }

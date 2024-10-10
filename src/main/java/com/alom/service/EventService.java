@@ -3,9 +3,9 @@ package com.alom.service;
 import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.alom.dto.EventMasterDto;
-import com.alom.model.EventModel;
 import com.alom.payload.GenericResponse;
 
 public interface EventService {
@@ -16,7 +16,9 @@ public interface EventService {
 
 	public Page<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size);
 
-	public GenericResponse addOrUpdateEvent(EventModel eventModel);
+	public GenericResponse addOrUpdateEvent(MultipartFile file, String jsonData);
+
+	public GenericResponse removeEventByName(String eventName);
 	
 
 }

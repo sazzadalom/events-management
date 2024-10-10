@@ -15,4 +15,6 @@ public interface EventMasterRepository extends JpaRepository<EventMasterEntity, 
 	EventMasterEntity findByEventName(String eventName);
 	
 	Page<EventMasterEntity> findByEventDateBetween(LocalDateTime fromEventDate, LocalDateTime uptoEventDate, Pageable pageable);
+
+	void deleteByEventName(String eventName);
 }
