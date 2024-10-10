@@ -1,4 +1,4 @@
-package com.alom.controller;
+package com.alom.api;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -29,22 +29,22 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 @RestController
-@RequestMapping("/events")
-public class EventController {
+@RequestMapping("/api")
+public class EventApi {
 
 	private final EventService eventService;
 
-	public EventController(EventService eventService) {
+	public EventApi(EventService eventService) {
 		this.eventService = eventService;
 	}
 
-	@GetMapping("/view-events")
+	@GetMapping("/events")
 	public Page<EventMasterDto> getPaginatedEvents(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
 		
-		log.debug("/get/request/events/view-events: {}", page);
+		log.debug("/get/request/api/events: {}", page);
 		Page<EventMasterDto> response = eventService.getAllEvents(page, size);
-		log.debug("/get/response/events/view-events: {}", response);
+		log.debug("/get/response/api/events: {}", response);
 		
 		return response;
 	}
@@ -54,32 +54,39 @@ public class EventController {
         return eventService.getTotalEventCount();
     }
 
-	@GetMapping("/view-event-by-name")
+	@GetMapping("/events/search-name")
 	public ResponseEntity<EventMasterDto> viewEventByName(@RequestParam String eventName) {
-		log.debug("/get/request/events/view-event-by-name: {}", eventName);
+		log.debug("/get/request/api/events/search-name: {}", eventName);
 		
 		EventMasterDto eventResponse = eventService.getEventByName(eventName);
-		log.debug("/get/response/events/view-events: {}", eventResponse);
+		log.debug("/get/response/api/events/search-name: {}", eventResponse);
 		
 		return ResponseEntity.ok(eventResponse);
 	}
 	
-	@GetMapping("/view-event-by-date-range")
+	@GetMapping("/events/search-date")
 	public Page<EventMasterDto> viewEventByName(@RequestParam LocalDate fromEventDate, @RequestParam LocalDate uptoEventDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-		return eventService.getEventBetween(fromEventDate,uptoEventDate,page,size);
+		log.debug("/get/request/api/events/search-date-range: {} : {}" , fromEventDate, uptoEventDate);
+		
+		 Page<EventMasterDto> pageResponse = eventService.getEventBetween(fromEventDate,uptoEventDate,page,size);
+		 log.debug("/get/response/api/events/search-date-range: {} " , pageResponse);
+		 
+		 return pageResponse;
 	}
 	
-	@PostMapping("/add-edit-events")
+	@PostMapping("/events/add-edit")
 	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData, @RequestParam("file") MultipartFile file) throws IOException{
-		log.debug("/post/request/events/add-edit-events: {}", jsonData);
+		log.debug("/post/request/api/events/add-edit: {}", jsonData);
+		
 		GenericResponse response = eventService.addOrUpdateEvent(file, jsonData);
-		log.debug("/post/response/events/add-edit-events: {}", response);
+		log.debug("/post/response/events/add-edit: {}", response);
+		
 		return ResponseEntity.ok(response);
 	}
 	
-	@DeleteMapping("/remove")
+	@DeleteMapping("/events/remove")
 	public ResponseEntity<GenericResponse> removeEvent(@RequestParam String eventName){
-		log.debug("/delete/request/events/remove: {}", eventName);
+		log.debug("/delete/request/api/events/remove: {}", eventName);
 		GenericResponse response = eventService.removeEventByName(eventName);
 		return ResponseEntity.ok(response);
 	}
