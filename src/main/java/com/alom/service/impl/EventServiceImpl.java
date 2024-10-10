@@ -214,4 +214,9 @@ public class EventServiceImpl implements EventService {
 		return null;
 	}
 
+	@Override
+	public long getTotalEventCount() {
+		return eventMasterRepository.count();
+	}
+
 }

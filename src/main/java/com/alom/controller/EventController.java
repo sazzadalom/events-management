@@ -48,6 +48,11 @@ public class EventController {
 		
 		return response;
 	}
+	
+    @GetMapping("/total/count")
+    public long getTotalEventCount() {
+        return eventService.getTotalEventCount();
+    }
 
 	@GetMapping("/view-event-by-name")
 	public ResponseEntity<EventMasterDto> viewEventByName(@RequestParam String eventName) {

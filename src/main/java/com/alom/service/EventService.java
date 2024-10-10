@@ -19,6 +19,8 @@ public interface EventService {
 	public GenericResponse addOrUpdateEvent(MultipartFile file, String jsonData);
 
 	public GenericResponse removeEventByName(String eventName);
+
+	public long getTotalEventCount();
 	
 
 }

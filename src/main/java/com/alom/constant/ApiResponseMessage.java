@@ -13,4 +13,7 @@ public class ApiResponseMessage {
 
 	public static final String SUCCESS = "success";
 	public static final String FAILURE = "failed";
+	
+	
+	public static final String FAILED_TO_LOGGED_IN = "failed to logged in";
 }
