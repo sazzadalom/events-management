@@ -1,9 +1,10 @@
 package com.alom.api;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.util.Date;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,6 @@ import com.alom.dto.EventMasterModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -78,8 +78,8 @@ public class EventApi {
 
 	@Operation(summary = "Search for events of a specific date range.", description = "Provide a range of date from date upto date is required as request parameter is required format is yyyy-MM-dd HH:mm:ss, JWT(JSON Web Token) is required.")
 	@GetMapping("/events/search-date")
-	public PaginationResponse<EventMasterModel> viewEventByDate(@RequestParam @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss") LocalDate fromEventDate,
-			@RequestParam @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss") LocalDate uptoEventDate, @RequestParam(defaultValue = "0") int page,
+	public PaginationResponse<EventMasterModel> viewEventByDate(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date fromEventDate,
+			@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date uptoEventDate, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-date-range: {} : {}", fromEventDate, uptoEventDate);
 
@@ -96,7 +96,7 @@ public class EventApi {
 			@Parameter(description = "Select a image or video file")
 			@RequestParam("mediaFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
 			@Parameter(description = "Select a XLSX file")
-			@RequestParam("excelFile") MultipartFile excelFile) throws IOException {
+			@RequestParam("excelFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
 		String jsonData = "";
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 

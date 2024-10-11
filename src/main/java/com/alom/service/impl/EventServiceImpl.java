@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -59,9 +57,6 @@ public class EventServiceImpl implements EventService {
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
 
-	private static final String REDIS_PARTITION_KEY = "event";
-	private static final String REDIS_FIND_ALL_KEY = "events";
-
 	public EventServiceImpl(EventMasterRepository eventMasterRepository, ExcelProperties excelProperties) {
 		this.eventMasterRepository = eventMasterRepository;
 		this.excelProperties = excelProperties;
@@ -70,7 +65,7 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public PaginationResponse<EventMasterModel> getAllEvents(Pageable pageable) {
 		PaginationResponse<EventMasterModel> response = null;
-			  response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY);
+			  response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY);
 		
 		/**
 		 * Check here if it is not in REDIS the search from database
@@ -83,7 +78,7 @@ public class EventServiceImpl implements EventService {
 				 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
 				 log.info("################### fetch data from database");
 				 
-				 redisTemplate.opsForHash().put(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY, response);
+				 redisTemplate.opsForHash().put(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY, response);
 		}
 		 
 
@@ -119,17 +114,14 @@ public class EventServiceImpl implements EventService {
 		EventMasterModel eventMasterDto = null;
 
 		try {
-			eventMasterDto = (EventMasterModel) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, eventName);
+			eventMasterDto = (EventMasterModel) redisTemplate.opsForHash().get(ApiResponseMessage.REDIS_PARTITION_KEY, eventName);
 			log.debug("redisData:{}", eventMasterDto);
-
-//			eventMasterDto = (EventMasterModel) redisData;
-			log.debug("eventMasterDto:{}", eventMasterDto);
 
 			if (Objects.isNull(eventMasterDto)) {
 				eventMasterEntity = eventMasterRepository.findByEventName(eventName);
 				eventMasterDto = ManualMapperService.convertToDto(eventMasterEntity);
 //			eventMasterDto.getAttendeeList().clear();
-				redisTemplate.opsForHash().put(REDIS_PARTITION_KEY, eventName, eventMasterDto);
+				redisTemplate.opsForHash().put(ApiResponseMessage.REDIS_PARTITION_KEY, eventName, eventMasterDto);
 				log.debug("get data from sql database and put it into redis : {}", eventMasterEntity);
 
 			}
@@ -145,26 +137,53 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public PaginationResponse<EventMasterModel> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate,
-			int page, int size) {
-		// Convert LocalDate to LocalDateTime (if your eventDate is LocalDateTime)
-		LocalDateTime fromDateTime = fromEventDate.atStartOfDay();
-		LocalDateTime toDateTime = uptoEventDate.atTime(23, 59, 59); // Include the whole day
+	public PaginationResponse<EventMasterModel> getEventBetween(Date fromEventDate, Date uptoEventDate,	int page, int size) {
 
 		// Create a PageRequest object for pagination
-		PageRequest pageRequest = PageRequest.of(page, size);
+		PageRequest pageRequest = PageRequest.of(page, size);		
+		
+		PaginationResponse<EventMasterModel> response = null;
+		  response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_DATE_RANGE_KEY);
+	
+	/**
+	 * Check here if it is not in REDIS the search from database
+	 */
+	if (Objects.isNull(response)) {
+			// Fetch paginated EventMasterEntity
+			 Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromEventDate, uptoEventDate,pageRequest);
+			 log.debug("EventMasterEntity: {}", eventEntityPage);
+			 Page<EventMasterModel> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
+			 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
+			 log.info("################### fetch data from database");
+			 
+			 redisTemplate.opsForHash().put(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_DATE_RANGE_KEY, response);
+	}
+	 
 
-		// Fetch the events within the date range
-		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromDateTime, toDateTime,
-				pageRequest);
+	/**
+	 * Here get all event and get one by one event and get all attendees for the
+	 * specific even. And send data for write excel file for that.
+	 */
+	List<EventMasterModel> eventMasterDtoList = response.getData();
 
-		Page<EventMasterModel> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
-
-		// Create the custom response
-		PaginationResponse<EventMasterModel> response = new PaginationResponse<>(entityPage.getTotalElements(),
-				entityPage.getContent(), entityPage.getTotalPages());
-
-		return response; // MapStruct will handle mapping of each
+	eventMasterDtoList.forEach(event -> {
+		try {
+			ExcelHelper.writeAttendeesToExcel(event.getAttendeeList(),"D:/media/" + event.getEventName() + " attendees.xlsx",excelProperties.getAttendeeUploadHeaders());
+			Files.write(Paths.get("D:/media/" + event.getFileName()), event.getFileDate());
+			event.setAttendeeList(null);
+			event.setFileDate(null);
+			event.setFileName(null);
+			event.setFileType(null);
+			event.setEventCreatedAt(null);
+			event.setFileId(null);
+		} catch (IOException e) {
+			throw new ExcelFileReadWriteException(ApiResponseMessage.FAILED_TO_WRITE_EXCEL_FILE);
+		}
+	});
+	
+	
+	
+	return response;
 
 	}
 

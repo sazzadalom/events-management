@@ -1,6 +1,6 @@
 package com.alom.dao.repositories;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ public interface EventMasterRepository extends JpaRepository<EventMasterEntity, 
 
 	EventMasterEntity findByEventName(String eventName);
 	
-	Page<EventMasterEntity> findByEventDateBetween(LocalDateTime fromEventDate, LocalDateTime uptoEventDate, Pageable pageable);
+	Page<EventMasterEntity> findByEventDateBetween(Date fromEventDate, Date uptoEventDate, Pageable pageable);
 
 	void deleteByEventName(String eventName);
 }
