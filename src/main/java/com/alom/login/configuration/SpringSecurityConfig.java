@@ -39,6 +39,7 @@ public class SpringSecurityConfig {
 		.csrf(customizer -> customizer.disable())
 		.authorizeHttpRequests(customizer -> customizer
 				.requestMatchers("/api/auth/**").permitAll()
+				.requestMatchers("/api/events/add-edit").hasRole("ADMIN")
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
 		.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
