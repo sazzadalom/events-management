@@ -39,7 +39,8 @@ public class SpringSecurityConfig {
 		.csrf(customizer -> customizer.disable())
 		.authorizeHttpRequests(customizer -> customizer
 				.requestMatchers("/api/auth/**").permitAll()
-				.requestMatchers("/api/events/add-edit").hasRole("ADMIN")
+				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**").permitAll() 
+				.requestMatchers("/api/events/add-edit","/api/events/remove").hasRole("ADMIN")
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
 		.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

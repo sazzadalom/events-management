@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.sql.rowset.serial.SerialBlob;
 
@@ -73,10 +74,12 @@ public class EventServiceImpl implements EventService {
 
 	@Override
 	public PaginationResponse<EventMasterDto> getAllEvents(Pageable pageable) {
-		
-		PaginationResponse<EventMasterDto> response = null; // Create the custom response
-		
-		response = (PaginationResponse<EventMasterDto>) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY);
+		PaginationResponse<EventMasterDto> response = null;
+		 Long totalCountOfRedis = redisTemplate.opsForHash().size(REDIS_PARTITION_KEY);
+		 
+		 if(this.getTotalEventCount() == totalCountOfRedis) {
+			  response = (PaginationResponse<EventMasterDto>) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY);
+		 }
 		
 		/**
 		 * Check here if it is not in REDIS the search from database
