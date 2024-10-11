@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 /**
  * This class is use specify the token beheviour.
  * @author sazzad
@@ -23,20 +25,24 @@ import io.jsonwebtoken.Jwts;
  *
  */
 @Service
-public class JWTService {
+public class JwtService {
 	
 
 	@Value("${expary.time}")
 	private int exparyTime;
 	private SecretKey secretKey ;
 	
-	public JWTService() {
-		try {
-			secretKey = KeyGenerator.getInstance("HmacSHA256").generateKey();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-	}
+	/**
+     * Initialize the secret key after the bean is created.
+     */
+    @PostConstruct
+    public void init() {
+        try {
+        	secretKey = KeyGenerator.getInstance("HmacSHA256").generateKey();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error initializing SecretKey for JWT", e);
+        }
+    }
 
 	public String generateToken(String username) {
 		Map<String, Object> claims = new HashMap<>();

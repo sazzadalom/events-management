@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.alom.login.jwt.JWTService;
+import com.alom.login.jwt.JwtService;
 import com.alom.login.service.MyUserDetailService;
 
 import jakarta.servlet.FilterChain;
@@ -32,7 +32,7 @@ import lombok.extern.log4j.Log4j2;
 public class JwtFilter extends OncePerRequestFilter {
 
 	@Autowired
-	private JWTService jwtService;
+	private JwtService jwtService;
 	
 	@Autowired
 	private ApplicationContext context;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import com.alom.constant.ApiResponseCode;
 import com.alom.constant.ApiResponseMessage;
 import com.alom.constant.Result;
-import com.alom.login.jwt.JWTService;
+import com.alom.login.jwt.JwtService;
 import com.alom.login.model.Users;
 import com.alom.login.repository.UserRepository;
 import com.alom.login.service.UsersService;
@@ -30,7 +30,7 @@ public class UsersServiceImpl implements UsersService{
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	private JWTService jwtService;
+	private JwtService jwtService;
 	
 	@Override
 	public GenericResponse register(Users users) {
