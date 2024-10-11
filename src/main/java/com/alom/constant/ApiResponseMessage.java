@@ -24,4 +24,5 @@ public class ApiResponseMessage {
 	public static final String USER_REGISTERED_SUCCESSFULLY = "user has been registered successfully.";
 	public static final String USER_REGISTRATION_FAILED = "user is not registered";
 	public static final String USER_ALREADY_EXIST = "user details already exist, please login";
+	public static final String FAILED_TO_WRITE_EXCEL_FILE = "failed to write excel file";
 }

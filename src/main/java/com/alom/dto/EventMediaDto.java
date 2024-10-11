@@ -1,6 +1,8 @@
 package com.alom.dto;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +21,8 @@ public class EventMediaDto {
 	private Long fileId;
     private String fileType;
     private String fileName;
-    private LocalDateTime uploadedAt;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date uploadedAt;
     private String fileData; // Add this field for the Base64-encoded data
 }

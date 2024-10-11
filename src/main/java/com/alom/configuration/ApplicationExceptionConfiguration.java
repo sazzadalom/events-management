@@ -18,7 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.alom.constant.ApiResponseCode;
 import com.alom.constant.ApiResponseMessage;
 import com.alom.constant.Result;
-import com.alom.exception.ExcelFileReadingException;
+import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
 import com.alom.exception.InternalServerError;
 import com.alom.payload.GenericResponse;
@@ -181,8 +181,8 @@ public class ApplicationExceptionConfiguration extends ResponseEntityExceptionHa
 				request);
 	}
 
-	@ExceptionHandler(ExcelFileReadingException.class)
-	public ResponseEntity<GenericResponse> excelFileReadingException(ExcelFileReadingException exception) {
+	@ExceptionHandler(ExcelFileReadWriteException.class)
+	public ResponseEntity<GenericResponse> excelFileReadingException(ExcelFileReadWriteException exception) {
 		log.error("exception occured: {}", exception.getMessage());
 
 		return new ResponseEntity<>(GenericResponse.builder()

@@ -16,7 +16,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.alom.dto.AttendeeDto;
-import com.alom.exception.ExcelFileReadingException;
+import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
 import com.alom.model.AttendeeModel;
 
@@ -39,7 +39,7 @@ public class ExcelHelper {
 
 		// IF VALIDATION OF SIZE OF EXCEL HEADER FAILS, WE ARE RETURNING THE RESPONSE AS FALSE.
 		if (uploadHeaderList.size() != headerList.size()) {
-			throw new ExcelFileReadingException("unsupported file format - size mismatch.");
+			throw new ExcelFileReadWriteException("unsupported file format - size mismatch.");
 		}
 		
 		// CHECKING THE WORKBOOK CONTENTS IF THEY ARE EQUAL OR NOT.
@@ -54,7 +54,7 @@ public class ExcelHelper {
 		}
 
 		if(flag) {
-			throw new ExcelFileReadingException("unsupported file format - header fields mismatch.");
+			throw new ExcelFileReadWriteException("unsupported file format - header fields mismatch.");
 		}
 	}
 

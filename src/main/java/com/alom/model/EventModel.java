@@ -1,6 +1,8 @@
 package com.alom.model;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,8 +20,8 @@ import lombok.ToString;
 public class EventModel {
 	private String EventName;
 	
-	private String eventDate;
-	private LocalDateTime eventDateZone;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date eventDate;
 	private String eventType;
 	private String imagePath;
 	private String attendeePath;

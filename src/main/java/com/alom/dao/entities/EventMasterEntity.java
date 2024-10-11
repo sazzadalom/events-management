@@ -1,8 +1,9 @@
 package com.alom.dao.entities;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,14 +44,16 @@ public class EventMasterEntity {
 	private String eventUrl;
 
 	@Column(name = "event_date")
-	private LocalDate eventDate;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date eventDate;
 
 	@Column(name = "event_created_at")
-	private LocalDateTime eventCreatedAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date eventCreatedAt;
 	
-	@OneToOne(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private EventMediaEntity eventMediaEntity;
 	
-	@OneToMany(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "eventMasterEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<EventAttendeeEntity> eventAttendeeEntityList;
 }

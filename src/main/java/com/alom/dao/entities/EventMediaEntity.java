@@ -1,7 +1,9 @@
 package com.alom.dao.entities;
 
 import java.sql.Blob;
-import java.time.LocalDateTime;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
@@ -48,7 +50,8 @@ public class EventMediaEntity {
 	private Blob fileData; // Using Blob for large data instead of byte[]
 
 	@Column(name = "uploaded_at")
-	private LocalDateTime uploadedAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date uploadedAt;
 
 	@OneToOne
 	@JoinColumn(name = "event_id")

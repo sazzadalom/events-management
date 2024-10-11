@@ -2,7 +2,7 @@
 <!DOCTYPE xml>
 <Configuration status="debug">
 	<Properties>
-		<Property name="LOG_DIR">/D:/Logs/</Property>
+		<Property name="LOG_DIR">/D:/Logs</Property>
 		<Property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss,SSS} : %X{log-trace-id} : %-6p : %F:%L : %m%n</Property>
 	</Properties>
 
