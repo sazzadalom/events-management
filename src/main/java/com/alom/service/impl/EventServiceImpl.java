@@ -3,9 +3,7 @@ package com.alom.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.sql.rowset.serial.SerialBlob;
 
@@ -38,17 +35,15 @@ import com.alom.dao.entities.EventAttendeeEntity;
 import com.alom.dao.entities.EventMasterEntity;
 import com.alom.dao.entities.EventMediaEntity;
 import com.alom.dao.repositories.EventMasterRepository;
-import com.alom.dto.AttendeeDto;
-import com.alom.dto.EventMasterDto;
+import com.alom.dto.AttendeeModel;
+import com.alom.dto.EventMasterModel;
 import com.alom.exception.EntityNotFoundException;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.mapper.ManualMapperService;
-import com.alom.model.EventModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
 import com.alom.utility.ExcelHelper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
@@ -73,13 +68,9 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public PaginationResponse<EventMasterDto> getAllEvents(Pageable pageable) {
-		PaginationResponse<EventMasterDto> response = null;
-		 Long totalCountOfRedis = redisTemplate.opsForHash().size(REDIS_PARTITION_KEY);
-		 
-		 if(this.getTotalEventCount() == totalCountOfRedis) {
-			  response = (PaginationResponse<EventMasterDto>) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY);
-		 }
+	public PaginationResponse<EventMasterModel> getAllEvents(Pageable pageable) {
+		PaginationResponse<EventMasterModel> response = null;
+			  response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, REDIS_FIND_ALL_KEY);
 		
 		/**
 		 * Check here if it is not in REDIS the search from database
@@ -88,7 +79,7 @@ public class EventServiceImpl implements EventService {
 				// Fetch paginated EventMasterEntity
 				 Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findAll(pageable);
 				 log.debug("EventMasterEntity: {}", eventEntityPage);
-				 Page<EventMasterDto> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
+				 Page<EventMasterModel> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
 				 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
 				 log.info("################### fetch data from database");
 				 
@@ -100,31 +91,38 @@ public class EventServiceImpl implements EventService {
 		 * Here get all event and get one by one event and get all attendees for the
 		 * specific even. And send data for write excel file for that.
 		 */
-		List<EventMasterDto> eventMasterDtoList = response.getData();
+		List<EventMasterModel> eventMasterDtoList = response.getData();
 
 		eventMasterDtoList.forEach(event -> {
 			try {
-				ExcelHelper.writeAttendeesToExcel(event.getAttendeeList(),
-						"D:/media/" + event.getEventName() + " attendees.xlsx",
-						excelProperties.getAttendeeUploadHeaders());
+				ExcelHelper.writeAttendeesToExcel(event.getAttendeeList(),"D:/media/" + event.getEventName() + " attendees.xlsx",excelProperties.getAttendeeUploadHeaders());
+				Files.write(Paths.get("D:/media/" + event.getFileName()), event.getFileDate());
+				event.setAttendeeList(null);
+				event.setFileDate(null);
+				event.setFileName(null);
+				event.setFileType(null);
+				event.setEventCreatedAt(null);
+				event.setFileId(null);
 			} catch (IOException e) {
 				throw new ExcelFileReadWriteException(ApiResponseMessage.FAILED_TO_WRITE_EXCEL_FILE);
 			}
 		});
 		
+		
+		
 		return response;
 	}
 
 	@Override
-	public EventMasterDto getEventByName(String eventName) {
+	public EventMasterModel getEventByName(String eventName) {
 		EventMasterEntity eventMasterEntity = null;
-		EventMasterDto eventMasterDto = null;
+		EventMasterModel eventMasterDto = null;
 
 		try {
-			eventMasterDto = (EventMasterDto) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, eventName);
+			eventMasterDto = (EventMasterModel) redisTemplate.opsForHash().get(REDIS_PARTITION_KEY, eventName);
 			log.debug("redisData:{}", eventMasterDto);
 
-//			eventMasterDto = (EventMasterDto) redisData;
+//			eventMasterDto = (EventMasterModel) redisData;
 			log.debug("eventMasterDto:{}", eventMasterDto);
 
 			if (Objects.isNull(eventMasterDto)) {
@@ -136,7 +134,7 @@ public class EventServiceImpl implements EventService {
 
 			}
 
-			List<AttendeeDto> attendeeList = eventMasterDto.getAttendeeList();
+			List<AttendeeModel> attendeeList = eventMasterDto.getAttendeeList();
 			ExcelHelper.writeAttendeesToExcel(attendeeList, "D:/media/attendees.xlsx",
 					excelProperties.getAttendeeUploadHeaders());
 
@@ -147,7 +145,7 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public PaginationResponse<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate,
+	public PaginationResponse<EventMasterModel> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate,
 			int page, int size) {
 		// Convert LocalDate to LocalDateTime (if your eventDate is LocalDateTime)
 		LocalDateTime fromDateTime = fromEventDate.atStartOfDay();
@@ -160,10 +158,10 @@ public class EventServiceImpl implements EventService {
 		Page<EventMasterEntity> eventEntityPage = eventMasterRepository.findByEventDateBetween(fromDateTime, toDateTime,
 				pageRequest);
 
-		Page<EventMasterDto> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
+		Page<EventMasterModel> entityPage = eventEntityPage.map(ManualMapperService::convertToDto);
 
 		// Create the custom response
-		PaginationResponse<EventMasterDto> response = new PaginationResponse<>(entityPage.getTotalElements(),
+		PaginationResponse<EventMasterModel> response = new PaginationResponse<>(entityPage.getTotalElements(),
 				entityPage.getContent(), entityPage.getTotalPages());
 
 		return response; // MapStruct will handle mapping of each
@@ -171,36 +169,29 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public GenericResponse addOrUpdateEvent(MultipartFile multipartFile, String jsonData) {
+	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, EventMasterModel eventModel) {
 
-		try (InputStream inputStream = multipartFile.getInputStream();
-				Workbook workbook = WorkbookFactory.create(inputStream)) {
+		try (InputStream inputStreamForExcelFile = excelFile.getInputStream();
+				Workbook workbook = WorkbookFactory.create(inputStreamForExcelFile);
+				InputStream inputStreamForMediaFile = excelFile.getInputStream()) {
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			EventModel eventModel = objectMapper.readValue(jsonData, EventModel.class);
 			EventMasterEntity eventMasterEntity = this.checkEventAlreadyExist(eventModel.getEventName());
-
-			Path path = Paths.get(eventModel.getImagePath());
-			String fileName = path.getFileName().toString();
-
-			byte[] data = Files.readAllBytes(path);
-
-			if (Objects.isNull(eventMasterEntity)) {
-				eventMasterEntity = EventMasterEntity.builder().eventName(eventModel.getEventName())
-						.eventUrl(eventModel.getEventWebLink()).eventDate(eventModel.getEventDate())
-						.eventCreatedAt(new Date()).build();
-			}
-
+			eventModel.setFileName(mediaFile.getOriginalFilename());
+			eventModel.setFileType(mediaFile.getContentType());
 			/**
 			 * Set data as Blob instate of byte[] for fast retrival
 			 */
-			Blob blob = new SerialBlob(data);
+			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getFileType())
+					.fileName(eventModel.getFileName()).fileData(new SerialBlob(mediaFile.getBytes())).uploadedAt(new Date()).build();
 
-			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getEventType())
-					.fileName(fileName).fileData(blob).uploadedAt(new Date()).build();
-
-			ExcelHelper.validateFileExtention(multipartFile.getOriginalFilename());
-
+			/**
+			 * validate the file if it is xlsx file.
+			 */
+			ExcelHelper.validateFileExtention(excelFile.getOriginalFilename());
+			
+			/**
+			 * validate file headers if it is match with provided heeder set
+			 */
 			ExcelHelper.validateHeaderContents(workbook, excelProperties.getAttendeeUploadHeaders());
 
 			List<EventAttendeeEntity> eventAttendeeEntityList = this.takeInputDataFromExcel(workbook);

@@ -15,10 +15,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.alom.dto.AttendeeDto;
+import com.alom.dto.AttendeeModel;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
-import com.alom.model.AttendeeModel;
 
 
 public class ExcelHelper {
@@ -104,7 +103,7 @@ public class ExcelHelper {
 	  * @param headerList
 	  * @throws IOException
 	  */
-	 public static void writeAttendeesToExcel(List<AttendeeDto> attendees, String filePath, List<String> headerList) throws IOException {
+	 public static void writeAttendeesToExcel(List<AttendeeModel> attendees, String filePath, List<String> headerList) throws IOException {
 		 
 	        Workbook workbook = new XSSFWorkbook(); // Create a new workbook
 	        Sheet sheet = workbook.createSheet("Attendees"); // Create a sheet
@@ -119,7 +118,7 @@ public class ExcelHelper {
 
 	        // Fill in attendee data
 	        for (int i = 0; i < attendees.size(); i++) {
-	            AttendeeDto attendee = attendees.get(i);
+	            AttendeeModel attendee = attendees.get(i);
 	            Row row = sheet.createRow(i + 1); // Start from the second row
 
 	            row.createCell(0).setCellValue(attendee.getName());

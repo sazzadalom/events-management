@@ -5,19 +5,19 @@ import java.time.LocalDate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alom.dto.EventMasterDto;
+import com.alom.dto.EventMasterModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 
 public interface EventService {
 
-	public PaginationResponse<EventMasterDto> getAllEvents(Pageable pageable);
+	public PaginationResponse<EventMasterModel> getAllEvents(Pageable pageable);
 
-	public EventMasterDto getEventByName(String eventName);
+	public EventMasterModel getEventByName(String eventName);
 
-	public PaginationResponse<EventMasterDto> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size);
+	public PaginationResponse<EventMasterModel> getEventBetween(LocalDate fromEventDate, LocalDate uptoEventDate, int page, int size);
 
-	public GenericResponse addOrUpdateEvent(MultipartFile file, String jsonData);
+	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, EventMasterModel eventMasterModel);
 
 	public GenericResponse removeEventByName(String eventName);
 

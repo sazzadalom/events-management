@@ -1,20 +1,19 @@
 package com.alom.mapper;
 
-import java.io.InputStream;
-import java.sql.Blob;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 import com.alom.dao.entities.EventMasterEntity;
-import com.alom.dto.AttendeeDto;
-import com.alom.dto.EventMasterDto;
-import com.alom.dto.EventMediaDto;
+import com.alom.dto.AttendeeModel;
+import com.alom.dto.EventMasterModel;
 
 public class ManualMapperService {
 
-	public static EventMasterDto convertToDto(EventMasterEntity entity) {
-        EventMasterDto dto = new EventMasterDto();
+	public static EventMasterModel convertToDto(EventMasterEntity entity) {
+        EventMasterModel dto = new EventMasterModel();
         dto.setEventId(entity.getEventId());
         dto.setEventName(entity.getEventName());
         dto.setEventUrl(entity.getEventUrl());
@@ -22,34 +21,44 @@ public class ManualMapperService {
         dto.setEventCreatedAt(entity.getEventCreatedAt());
 
         if (entity.getEventMediaEntity() != null) {
-            EventMediaDto mediaDTO = new EventMediaDto();
-            mediaDTO.setFileId(entity.getEventMediaEntity().getFileId());
-            mediaDTO.setFileType(entity.getEventMediaEntity().getFileType());
-            mediaDTO.setFileName(entity.getEventMediaEntity().getFileName());
-            mediaDTO.setUploadedAt(entity.getEventMediaEntity().getUploadedAt());
+        	dto.setFileId(entity.getEventMediaEntity().getFileId());
+            dto.setFileType(entity.getEventMediaEntity().getFileType());
+            dto.setFileName(entity.getEventMediaEntity().getFileName());
 
+//            dto.setFileDate(entity.getEventMediaEntity().getFileData());
+			try {
+				dto.setFileDate(entity.getEventMediaEntity().getFileData().getBinaryStream().readAllBytes());
+			} catch (IOException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+ /* 
          // Retrieve and convert Blob to Base64
             Blob blob = entity.getEventMediaEntity().getFileData();
+
             if (blob != null) {
                 try {
                     InputStream inputStream = blob.getBinaryStream();
                     byte[] byteArray = inputStream.readAllBytes();
                     String base64Data = Base64.getEncoder().encodeToString(byteArray);
-                    mediaDTO.setFileData(base64Data); // Set Base64-encoded data
+                 // Decode the Base64 string to byte array
+                    byte[] bytes = Base64.getDecoder().decode(base64Data);
+                    log.debug("******************bytes : ", bytes);
+
+                    dto.setFileDate(entity.getEventMediaEntity().getFileData()); // Set Base64-encoded data
                     
                 } catch (Exception e) {
                     // Handle exception (e.g., log the error)
-                    mediaDTO.setFileData(null); // or some error indicator
+                    dto.setFileDate(null); // or some error indicator
                 }
             }
+  */
 
-            
-            dto.setEventMedia(mediaDTO);
         }
         
-        List<AttendeeDto> attendeeDtoList= new ArrayList<>();
+        List<AttendeeModel> attendeeDtoList= new ArrayList<>();
         entity.getEventAttendeeEntityList().forEach(attendee -> {
-        	attendeeDtoList .add (new AttendeeDto(attendee.getAttId(),attendee.getAttName(),attendee.getBusinessTitle(),attendee.getCity(),attendee.getContactNumber()));
+        	attendeeDtoList .add (new AttendeeModel(attendee.getAttId(),attendee.getAttName(),attendee.getBusinessTitle(),attendee.getCity(),attendee.getContactNumber()));
         	
         });
         dto.setAttendeeList(attendeeDtoList);

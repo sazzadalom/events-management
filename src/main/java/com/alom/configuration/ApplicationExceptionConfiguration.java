@@ -25,6 +25,8 @@ import com.alom.payload.GenericResponse;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -75,19 +77,19 @@ public class ApplicationExceptionConfiguration extends ResponseEntityExceptionHa
 				HttpStatus.NOT_FOUND);
 	}
 	
-//	@ExceptionHandler(ConstraintViolationException.class)
-//	public ResponseEntity<GenericResponse> constraintViolationExceptionHandler(ConstraintViolationException cve) {
-//		log.error("constraint violation exception handler: {}", cve.getMessage());
-//
-//		StringBuilder sb = new StringBuilder();
-//
-//		for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
-//			sb.append(violation.getMessage());
-//		}
-//
-//		return new ResponseEntity<>(GenericResponse.builder().message(sb.toString()).result(Result.FAILED).responseCode("400").build(), 
-//				HttpStatus.BAD_REQUEST);
-//	}
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<GenericResponse> constraintViolationExceptionHandler(ConstraintViolationException cve) {
+		log.error("constraint violation exception handler: {}", cve.getMessage());
+
+		StringBuilder sb = new StringBuilder();
+
+		for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
+			sb.append(violation.getMessage());
+		}
+
+		return new ResponseEntity<>(GenericResponse.builder().message(sb.toString()).result(Result.FAILED).responseCode("400").build(), 
+				HttpStatus.BAD_REQUEST);
+	}
 	
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException methodArgumentNotValidException,
