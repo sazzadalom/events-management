@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -42,6 +44,10 @@ import com.alom.utility.ExcelHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -225,6 +231,21 @@ public class EventServiceImpl implements EventService {
 			List<AttendeeModel> attendeeModelList = this.takeInputDataFromExcel(workbook);
 			eventModel.setAttendeeList(attendeeModelList);
 			
+			
+			/**
+			 * Jakatra validation done here
+			 */
+			Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+			Set<ConstraintViolation<EventMasterModel>> violations = validator.validate(eventModel);
+
+			if (!violations.isEmpty()) {
+			    String errorMessage = violations.stream()
+			        .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+			        .collect(Collectors.joining(", "));
+			    throw new ConstraintViolationException("Validation failed: " + errorMessage, violations);
+			}
+
+			
 			/**
 			 * After mapping model to entity.
 			 */
@@ -279,13 +300,13 @@ public class EventServiceImpl implements EventService {
 					eventAttendeeMode.setName(dataFormatter.formatCellValue(cell).trim());
 					break;
 				case 1:
-					eventAttendeeMode.setContactNumber(dataFormatter.formatCellValue(cell).trim());
-					break;
-				case 2:
 					eventAttendeeMode.setBusinessTitle(dataFormatter.formatCellValue(cell).trim());
 					break;
-				case 3:
+				case 2:
 					eventAttendeeMode.setCity(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 3:
+					eventAttendeeMode.setContactNumber(dataFormatter.formatCellValue(cell).trim());
 					break;
 				default:
 					break;

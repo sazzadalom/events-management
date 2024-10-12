@@ -26,6 +26,10 @@ public class ApiResponseMessage {
 	public static final String USER_ALREADY_EXIST = "user details already exist, please login";
 	public static final String FAILED_TO_WRITE_EXCEL_FILE = "failed to write excel file";
 	public static final String REDIS_PARTITION_KEY = "event";
-	public static final Object REDIS_FIND_DATE_RANGE_KEY = "events_date_reange";
-	public static final Object REDIS_FIND_ALL_KEY = "events";
+	public static final String REDIS_FIND_DATE_RANGE_KEY = "events_date_reange";
+	public static final String REDIS_FIND_ALL_KEY = "events";
+	
+	public static final String CONTACT_NUMBER_PATTERN =  "^[789]\\d{9}$";
+	
+
 }

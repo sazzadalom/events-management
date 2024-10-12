@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,12 +40,14 @@ public class EventMasterModel implements Serializable{
 	@Schema(description = "The field is  not required it will managed by JPA(Java Persistance API) of the event", example = "0")
 	private Long eventId;
 	
+	@NotNull(message = "Event name cannot be null ")
 	@Schema(description = "The field is required of the event", example = "Happy Holi")
     private String eventName;
 	
 	 @Schema(description = "The field is required of the event", example = "www.aurusit.com")
     private String eventUrl;
     
+	 @NotNull(message = "Event date cannot be null ")
 	 @Schema(description = "The field is required of the event", example = "2024-12-01 00:00:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date eventDate;
@@ -64,7 +68,7 @@ public class EventMasterModel implements Serializable{
 	@Schema(description = "The field is  not required it will managed from system")
     private Date eventCreatedAt;
 	
-	@Schema(description = "The field is  not required it will managed from excel sheet of attendees")
+	@Valid
     private List<AttendeeModel> attendeeList;
     
 

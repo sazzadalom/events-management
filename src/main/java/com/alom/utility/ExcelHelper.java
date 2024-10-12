@@ -19,7 +19,10 @@ import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
 import com.alom.model.AttendeeModel;
 
+import lombok.extern.log4j.Log4j2;
 
+
+@Log4j2
 public class ExcelHelper {
 	
 	
@@ -34,7 +37,7 @@ public class ExcelHelper {
 
 		// WORKBOOK HEADER LIST THAT IS COMING FROM BULK UPLOAD.
 		List<String> uploadHeaderList = getUploadFileHeader(workbook);
-//		log.info("excel header size: {} | upload header size: {}", headerList.size(), uploadHeaderList.size());
+		log.info("excel header size: {} | upload header size: {}", headerList.size(), uploadHeaderList.size());
 
 		// IF VALIDATION OF SIZE OF EXCEL HEADER FAILS, WE ARE RETURNING THE RESPONSE AS FALSE.
 		if (uploadHeaderList.size() != headerList.size()) {
@@ -46,7 +49,7 @@ public class ExcelHelper {
 
 		for (int i = 0; i < uploadHeaderList.size(); ++i) {
 			if (!uploadHeaderList.get(i).trim().equals(headerList.get(i).trim())) {
-//				log.error("header content not equal at index: {} | incomming header content: {} with size: {} | exit excel header content: {} with size: {}", i, uploadHeaderList.get(i).trim(), uploadHeaderList.get(i).trim().length(), headerList.get(i).trim(), headerList.get(i).trim().length());
+				log.error("header content not equal at index: {} | incomming header content: {} with size: {} | exit excel header content: {} with size: {}", i, uploadHeaderList.get(i).trim(), uploadHeaderList.get(i).trim().length(), headerList.get(i).trim(), headerList.get(i).trim().length());
 				flag = true;
 				break;
 			}
