@@ -15,14 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.alom.annotations.ValidExcelFileExtension;
-import com.alom.dto.EventMasterModel;
+import com.alom.model.EventMasterModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 
@@ -92,16 +91,15 @@ public class EventApi {
 
 	@Operation(summary = "Create event with upload attendees and media", description = "No parameter is required for this API, JWT(JSON Web Token) is required. Add event attendees file (xlsx). This functionality is restricted to admin users.")
 	@PostMapping(value = "/events/add-edit", consumes = "multipart/form-data")
-	public ResponseEntity<GenericResponse> addEvent(@RequestBody EventMasterModel eventMasterModel,
+	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData,
 			@Parameter(description = "Select a image or video file")
-			@RequestParam("mediaFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
+			@RequestParam("mediaFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
 			@Parameter(description = "Select a XLSX file")
-			@RequestParam("excelFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
-		String jsonData = "";
+			@RequestParam("excelFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 
 		
-		GenericResponse response = eventService.addOrUpdateEvent(mediaFile, excelFile, eventMasterModel);
+		GenericResponse response = eventService.addOrUpdateEvent(mediaFile, excelFile, jsonData);
 		log.debug("/post/response/events/add-edit: {}", response);
 
 		return ResponseEntity.ok(response);

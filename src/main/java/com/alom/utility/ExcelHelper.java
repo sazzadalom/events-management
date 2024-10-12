@@ -15,9 +15,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.alom.dto.AttendeeModel;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
+import com.alom.model.AttendeeModel;
 
 
 public class ExcelHelper {

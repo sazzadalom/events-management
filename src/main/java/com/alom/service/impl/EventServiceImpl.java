@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -33,15 +30,16 @@ import com.alom.dao.entities.EventAttendeeEntity;
 import com.alom.dao.entities.EventMasterEntity;
 import com.alom.dao.entities.EventMediaEntity;
 import com.alom.dao.repositories.EventMasterRepository;
-import com.alom.dto.AttendeeModel;
-import com.alom.dto.EventMasterModel;
 import com.alom.exception.EntityNotFoundException;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.mapper.ManualMapperService;
+import com.alom.model.AttendeeModel;
+import com.alom.model.EventMasterModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
 import com.alom.service.EventService;
 import com.alom.utility.ExcelHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
@@ -65,8 +63,11 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public PaginationResponse<EventMasterModel> getAllEvents(Pageable pageable) {
 		PaginationResponse<EventMasterModel> response = null;
-			  response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY);
-		
+			response = (PaginationResponse<EventMasterModel>) redisTemplate.opsForHash().get(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY);
+			 
+//			 Type type = object.getClass();
+//			 log.debug("type of redis template: {}", type);
+
 		/**
 		 * Check here if it is not in REDIS the search from database
 		 */
@@ -188,21 +189,29 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, EventMasterModel eventModel) {
+	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, String jsonData) {
 
+		
 		try (InputStream inputStreamForExcelFile = excelFile.getInputStream();
 				Workbook workbook = WorkbookFactory.create(inputStreamForExcelFile);
 				InputStream inputStreamForMediaFile = excelFile.getInputStream()) {
-
+			 ObjectMapper objectMapper = new ObjectMapper();
+			EventMasterModel eventModel = objectMapper.readValue(jsonData, EventMasterModel.class);
+			log.debug("after mapped the object from json string to eventMasterModel:{} ", eventModel);
+			
 			EventMasterEntity eventMasterEntity = this.checkEventAlreadyExist(eventModel.getEventName());
 			eventModel.setFileName(mediaFile.getOriginalFilename());
 			eventModel.setFileType(mediaFile.getContentType());
-			/**
-			 * Set data as Blob instate of byte[] for fast retrival
-			 */
-			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getFileType())
-					.fileName(eventModel.getFileName()).fileData(new SerialBlob(mediaFile.getBytes())).uploadedAt(new Date()).build();
-
+			eventModel.setFileDate(mediaFile.getBytes());
+			
+//			/**
+//			 * Set data as Blob instate of byte[] for fast retrival
+//			 */
+//			EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileType(eventModel.getFileType())
+//					.fileName(eventModel.getFileName()).fileData(new SerialBlob(mediaFile.getBytes())).uploadedAt(new Date()).build();
+//
+//			
+			
 			/**
 			 * validate the file if it is xlsx file.
 			 */
@@ -213,21 +222,33 @@ public class EventServiceImpl implements EventService {
 			 */
 			ExcelHelper.validateHeaderContents(workbook, excelProperties.getAttendeeUploadHeaders());
 
-			List<EventAttendeeEntity> eventAttendeeEntityList = this.takeInputDataFromExcel(workbook);
-
-			eventMediaEntity.setEventMasterEntity(eventMasterEntity);
-			eventMasterEntity.setEventMediaEntity(eventMediaEntity);
-			eventMasterEntity.setEventAttendeeEntityList(eventAttendeeEntityList);
-
-			for (EventAttendeeEntity eventAttendee : eventAttendeeEntityList) {
-				eventAttendee.setEventMasterEntity(eventMasterEntity);
+			List<AttendeeModel> attendeeModelList = this.takeInputDataFromExcel(workbook);
+			eventModel.setAttendeeList(attendeeModelList);
+			
+			/**
+			 * After mapping model to entity.
+			 */
+			eventMasterEntity = ManualMapperService.convertToEntity(eventModel);
+			log.debug("prepared object to persist eventMasterEntity:{} ", eventMasterEntity);
+			
+			/**
+			 * use this for hibernate mapping
+			 * 
+			 */
+			List<EventAttendeeEntity> eventAttendeeEntityList = eventMasterEntity.getEventAttendeeEntityList();
+			
+			for (EventAttendeeEntity eventAttendeeEntity : eventAttendeeEntityList) {
+				eventAttendeeEntity.setEventMasterEntity(eventMasterEntity);
 			}
-
+			
+			EventMediaEntity eventMediaEntity = eventMasterEntity.getEventMediaEntity();
+			eventMediaEntity.setEventMasterEntity(eventMasterEntity);
+			
 			eventMasterRepository.save(eventMasterEntity);
 
-		} catch (IOException | SQLException ioException) {
-			System.err.println(ioException.getMessage());
-			ioException.getStackTrace();
+		} catch (IOException ioException) {
+			log.debug("ioException occured:{}", ioException.getMessage());
+
 		}
 
 		return GenericResponse.builder().result("success").responseCode("00").message("event created successfully.")
@@ -238,14 +259,14 @@ public class EventServiceImpl implements EventService {
 		return eventMasterRepository.findByEventName(eventName);
 	}
 
-	private List<EventAttendeeEntity> takeInputDataFromExcel(Workbook workbook) {
-		List<EventAttendeeEntity> eventAttendeeEntityList = new ArrayList<>();
+	private List<AttendeeModel> takeInputDataFromExcel(Workbook workbook) {
+		List<AttendeeModel> eventAttendeeModelList = new ArrayList<>();
 		Iterator<Row> iteratorRow = workbook.getSheetAt(0).iterator();
 		iteratorRow.next();
 
 		while (iteratorRow.hasNext()) {
 
-			EventAttendeeEntity eventAttendeeEntity = EventAttendeeEntity.builder().build();
+			AttendeeModel eventAttendeeMode = AttendeeModel.builder().build();
 
 			Row row = iteratorRow.next();
 			DataFormatter dataFormatter = new DataFormatter();
@@ -255,31 +276,32 @@ public class EventServiceImpl implements EventService {
 
 				switch (i) {
 				case 0:
-					eventAttendeeEntity.setAttName(dataFormatter.formatCellValue(cell).trim());
+					eventAttendeeMode.setName(dataFormatter.formatCellValue(cell).trim());
 					break;
 				case 1:
-					eventAttendeeEntity.setContactNumber(dataFormatter.formatCellValue(cell).trim());
+					eventAttendeeMode.setContactNumber(dataFormatter.formatCellValue(cell).trim());
 					break;
 				case 2:
-					eventAttendeeEntity.setBusinessTitle(dataFormatter.formatCellValue(cell).trim());
+					eventAttendeeMode.setBusinessTitle(dataFormatter.formatCellValue(cell).trim());
 					break;
 				case 3:
-					eventAttendeeEntity.setCity(dataFormatter.formatCellValue(cell).trim());
+					eventAttendeeMode.setCity(dataFormatter.formatCellValue(cell).trim());
 					break;
 				default:
 					break;
 
 				}
 			}
-			eventAttendeeEntityList.add(eventAttendeeEntity);
+			eventAttendeeModelList.add(eventAttendeeMode);
 		}
-		return eventAttendeeEntityList;
+		return eventAttendeeModelList;
 
 	}
 
 	@Override
 	public GenericResponse removeEventByName(String eventName) {
-
+		redisTemplate.opsForHash().delete(ApiResponseMessage.REDIS_PARTITION_KEY,ApiResponseMessage.REDIS_FIND_ALL_KEY);
+		redisTemplate.opsForHash().delete(ApiResponseMessage.REDIS_PARTITION_KEY,ApiResponseMessage.REDIS_FIND_DATE_RANGE_KEY);
 		Optional<EventMasterEntity> event = Optional.of(eventMasterRepository.findByEventName(eventName));
 
 		if (event.isPresent()) {

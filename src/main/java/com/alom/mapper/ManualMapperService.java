@@ -4,11 +4,16 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
+import org.hibernate.engine.jdbc.BlobProxy;
+
+import com.alom.dao.entities.EventAttendeeEntity;
 import com.alom.dao.entities.EventMasterEntity;
-import com.alom.dto.AttendeeModel;
-import com.alom.dto.EventMasterModel;
+import com.alom.dao.entities.EventMediaEntity;
+import com.alom.model.AttendeeModel;
+import com.alom.model.EventMasterModel;
 
 public class ManualMapperService {
 
@@ -64,6 +69,28 @@ public class ManualMapperService {
         dto.setAttendeeList(attendeeDtoList);
 
         return dto;
+    }
+	
+	public static EventMasterEntity convertToEntity( EventMasterModel model) {
+		Date createdOn = new Date();
+		EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileName(model.getFileName()).fileType(model.getFileType()).fileData(BlobProxy.generateProxy(model.getFileDate())).uploadedAt(createdOn).build();
+		List<EventAttendeeEntity> eventAttendeeEntityList = new ArrayList<>();
+		model.getAttendeeList().forEach(attendee -> {
+			eventAttendeeEntityList.add(EventAttendeeEntity.builder().attName(attendee.getName()).contactNumber(attendee.getContactNumber()).businessTitle(attendee.getBusinessTitle()).city(attendee.getCity()).build());
+		});
+		
+		EventMasterEntity entity = EventMasterEntity.builder()
+				.eventName(model.getEventName())
+				.eventUrl(model.getEventUrl())
+				.eventDate(model.getEventDate())
+				.eventCreatedAt(createdOn)
+				.eventMediaEntity(eventMediaEntity)
+				.eventAttendeeEntityList(eventAttendeeEntityList)
+				.build();
+        
+        
+
+        return entity;
     }
 	
 	
