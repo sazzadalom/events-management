@@ -4,17 +4,17 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alom.annotations.ValidExcelFileExtension;
+import com.alom.annotations.ValidFileExtension;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class ExcelFileExtensionValidator implements ConstraintValidator<ValidExcelFileExtension, MultipartFile> {
+public class ExcelFileExtensionValidator implements ConstraintValidator<ValidFileExtension, MultipartFile> {
 
     private List<String> acceptedExtensions;
 
     @Override
-    public void initialize(ValidExcelFileExtension constraintAnnotation) {
+    public void initialize(ValidFileExtension constraintAnnotation) {
         // Convert the accepted extensions from the annotation to a List
         acceptedExtensions = Arrays.asList(constraintAnnotation.acceptedExtensions());
     }

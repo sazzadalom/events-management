@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alom.annotations.ValidExcelFileExtension;
+import com.alom.annotations.ValidFileExtension;
 import com.alom.model.EventMasterModel;
 import com.alom.model.PaginationResponse;
 import com.alom.payload.GenericResponse;
@@ -93,9 +93,9 @@ public class EventApi {
 	@PostMapping(value = "/events/add-edit", consumes = "multipart/form-data")
 	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData,
 			@Parameter(description = "Select a image or video file")
-			@RequestParam("mediaFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
+			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
 			@Parameter(description = "Select a XLSX file")
-			@RequestParam("excelFile") @Valid @ValidExcelFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
+			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 
 		

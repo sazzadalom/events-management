@@ -35,7 +35,7 @@ public class EventMediaEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "file_id")
+	@Column(name = "media_id")
 	private Long fileId;
 
 	@Column(name = "file_type")

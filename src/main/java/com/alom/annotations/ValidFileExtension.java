@@ -12,7 +12,7 @@ import com.alom.annotations.impl.ExcelFileExtensionValidator;
 @Constraint(validatedBy = ExcelFileExtensionValidator.class)
 @Target({ ElementType.PARAMETER, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidExcelFileExtension {
+public @interface ValidFileExtension {
     String message() default "Invalid file extension";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

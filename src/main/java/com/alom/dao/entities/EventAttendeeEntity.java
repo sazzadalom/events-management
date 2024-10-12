@@ -27,13 +27,13 @@ public class EventAttendeeEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "att_id")
+	@Column(name = "attendee_id")
 	private Long attId;
 	
-	@Column(name = "att_name")
+	@Column(name = "attendee_name")
 	private String attName;
 	
-	@Column(name = "contact_number")
+	@Column(name = "attendee_contact_number")
 	private String contactNumber;
 	
 	@Column(name = "business_title")
