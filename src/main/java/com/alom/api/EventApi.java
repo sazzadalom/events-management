@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +38,7 @@ import lombok.extern.log4j.Log4j2;
  */
 
 @Log4j2
+@Validated
 @RestController
 @RequestMapping("/api")
 public class EventApi {
@@ -89,12 +91,12 @@ public class EventApi {
 		return pageResponse;
 	}
 
-	@Operation(summary = "Create event with upload attendees and media", description = "No parameter is required for this API, JWT(JSON Web Token) is required. Add event attendees file (xlsx). This functionality is restricted to admin users.")
+	@Operation(summary = "Create event with upload attendees and media", description = "No parameter is required for this API, Provide string of json data like {\"eventName\": \"Happy Holi\",\"eventUrl\": \"www.aurusit.com\",\"eventDate\": \"2024-10-16 05:10:31\"}")
 	@PostMapping(value = "/events/add-edit", consumes = "multipart/form-data")
 	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData,
 			@Parameter(description = "Select a image or video file")
 			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
-			@Parameter(description = "Select a XLSX file")
+			@Parameter(description = " Add event attendees file (xlsx).")
 			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 
@@ -105,7 +107,7 @@ public class EventApi {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "Remove event using event name", description = "Remove events from the inventory. This operation should also be restricted to admin users. eventName is required as request parameter is required for this, JWT(JSON Web Token) is required.")
+	@Operation(summary = "Remove event using event name", description = "Remove events from the inventory. This operation should also be restricted to admin users. eventName is required as request parameter is required for this API")
 	@DeleteMapping("/events/remove")
 	public ResponseEntity<GenericResponse> removeEvent(@RequestParam String eventName) {
 		log.debug("/delete/request/api/events/remove: {}", eventName);

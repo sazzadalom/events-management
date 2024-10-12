@@ -21,16 +21,34 @@ public class ExcelFileExtensionValidator implements ConstraintValidator<ValidFil
 
     @Override
     public boolean isValid(MultipartFile file, ConstraintValidatorContext context) {
-        // If the file is null, return true (can be handled separately)
         if (file == null || file.isEmpty()) {
-            return true; 
+            return true; // Allow empty file validation, can customize this if required
         }
 
         String filename = file.getOriginalFilename();
         if (filename != null) {
             String fileExtension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
-            return acceptedExtensions.contains(fileExtension);
+            if (!acceptedExtensions.contains(fileExtension)) {
+                // Disable default constraint violation message
+                context.disableDefaultConstraintViolation();
+
+                // Get the user-defined message from the annotation
+                String customMessage = context.getDefaultConstraintMessageTemplate();
+
+                // Use a default message if no custom message is provided
+                String errorMessage = (customMessage != null && !customMessage.isEmpty()) 
+                                      ? customMessage 
+                                      : "Invalid file extension. Accepted extensions: " + String.join(", ", acceptedExtensions);
+
+                // Build the constraint violation with the custom message
+                context.buildConstraintViolationWithTemplate(errorMessage)
+                       .addConstraintViolation();
+                return false;
+            }
+            return true;
         }
-        return false; // Invalid if no extension found
+        return false; // No extension found, return as invalid
     }
+
+
 }
