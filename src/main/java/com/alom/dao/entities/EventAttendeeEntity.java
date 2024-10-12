@@ -39,7 +39,7 @@ public class EventAttendeeEntity {
 	@Column(name = "business_title")
 	private String businessTitle;
 	
-	@Column(name = "city")
+	@Column(name = "attendee_city")
 	private String city;
 
 	@ManyToOne
