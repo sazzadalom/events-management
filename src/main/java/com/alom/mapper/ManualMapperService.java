@@ -17,24 +17,22 @@ import com.alom.model.EventMasterModel;
 
 public class ManualMapperService {
 
-	public static EventMasterModel convertToDto(EventMasterEntity entity) {
-        EventMasterModel dto = new EventMasterModel();
-        dto.setEventId(entity.getEventId());
-        dto.setEventName(entity.getEventName());
-        dto.setEventUrl(entity.getEventUrl());
-        dto.setEventDate(entity.getEventDate());
-        dto.setEventCreatedAt(entity.getEventCreatedAt());
+	public static EventMasterModel convertToModel(EventMasterEntity entity) {
+        EventMasterModel model = new EventMasterModel();
+        model.setEventId(entity.getEventId());
+        model.setEventName(entity.getEventName());
+        model.setEventUrl(entity.getEventUrl());
+        model.setEventDate(entity.getEventDate());
+        model.setEventCreatedAt(entity.getEventCreatedAt());
 
         if (entity.getEventMediaEntity() != null) {
-        	dto.setFileId(entity.getEventMediaEntity().getFileId());
-            dto.setFileType(entity.getEventMediaEntity().getFileType());
-            dto.setFileName(entity.getEventMediaEntity().getFileName());
+        	model.setFileId(entity.getEventMediaEntity().getFileId());
+        	model.setFileType(entity.getEventMediaEntity().getFileType());
+        	model.setFileName(entity.getEventMediaEntity().getFileName());
 
-//            dto.setFileDate(entity.getEventMediaEntity().getFileData());
 			try {
-				dto.setFileDate(entity.getEventMediaEntity().getFileData().getBinaryStream().readAllBytes());
+				model.setFileDate(entity.getEventMediaEntity().getFileData().getBinaryStream().readAllBytes());
 			} catch (IOException | SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
  /* 
@@ -66,9 +64,9 @@ public class ManualMapperService {
         	attendeeDtoList .add (new AttendeeModel(attendee.getAttId(),attendee.getAttName(),attendee.getBusinessTitle(),attendee.getCity(),attendee.getContactNumber()));
         	
         });
-        dto.setAttendeeList(attendeeDtoList);
+        model.setAttendeeList(attendeeDtoList);
 
-        return dto;
+        return model;
     }
 	
 	public static EventMasterEntity convertToEntity( EventMasterModel model) {

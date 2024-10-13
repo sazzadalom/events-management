@@ -12,7 +12,7 @@ public interface EventMasterRepository extends JpaRepository<EventMasterEntity, 
 
 	Page<EventMasterEntity> findAll(Pageable pageable);  
 
-	EventMasterEntity findByEventName(String eventName);
+	Page<EventMasterEntity> findByEventName(String eventName, Pageable pageable);
 	
 	Page<EventMasterEntity> findByEventDateBetween(Date fromEventDate, Date uptoEventDate, Pageable pageable);
 

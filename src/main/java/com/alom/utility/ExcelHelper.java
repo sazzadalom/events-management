@@ -136,5 +136,44 @@ public class ExcelHelper {
 	        } finally {
 	            workbook.close(); // Close the workbook
 	        }
-	    } 
+	    }
+
+	 public static List<AttendeeModel> takeInputDataFromExcel(Workbook workbook, List<String> attendeeUploadHeaders) {
+		List<AttendeeModel> eventAttendeeModelList = new ArrayList<>();
+		Iterator<Row> iteratorRow = workbook.getSheetAt(0).iterator();
+		iteratorRow.next();
+
+		while (iteratorRow.hasNext()) {
+
+			AttendeeModel eventAttendeeMode = AttendeeModel.builder().build();
+
+			Row row = iteratorRow.next();
+			DataFormatter dataFormatter = new DataFormatter();
+
+			for (int i = 0; i < attendeeUploadHeaders.size(); ++i) {
+				Cell cell = row.getCell(i);
+
+				switch (i) {
+				case 0:
+					eventAttendeeMode.setName(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 1:
+					eventAttendeeMode.setBusinessTitle(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 2:
+					eventAttendeeMode.setCity(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 3:
+					eventAttendeeMode.setContactNumber(dataFormatter.formatCellValue(cell).trim());
+					break;
+				default:
+					break;
+
+				}
+			}
+			eventAttendeeModelList.add(eventAttendeeMode);
+		}
+		return eventAttendeeModelList;
+
+	}
 }

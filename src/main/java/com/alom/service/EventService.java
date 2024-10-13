@@ -11,9 +11,9 @@ import com.alom.payload.GenericResponse;
 
 public interface EventService {
 
-	public PaginationResponse<EventMasterModel> getAllEvents(Pageable pageable);
+	public PaginationResponse<EventMasterModel> getAllEvents( int page, int size);
 
-	public EventMasterModel getEventByName(String eventName);
+	public PaginationResponse<EventMasterModel> getEventByName(String eventName, int page, int size);
 
 	public PaginationResponse<EventMasterModel> getEventBetween(Date fromEventDate, Date uptoEventDate, int page, int size);
 

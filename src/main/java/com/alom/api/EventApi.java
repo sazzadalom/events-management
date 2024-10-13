@@ -3,7 +3,6 @@ package com.alom.api;
 import java.io.IOException;
 import java.util.Date;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -51,10 +50,10 @@ public class EventApi {
 
 	@Operation(summary = "Fetch all events", description = "Fetches all events available in the system.No parameter is required for this, JWT(JSON Web Token) is required.")
 	@GetMapping("/events")
-	public PaginationResponse<EventMasterModel> getPaginatedEvents(Pageable pageable) {
+	public PaginationResponse<EventMasterModel> getPaginatedEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
-		log.debug("/get/request/api/events: {}", pageable);
-		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(pageable);
+		log.debug("/get/request/api/events page : size {} {}", page, size);
+		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(page,size);
 		log.debug("/get/response/api/events: {}", response);
 
 		return response;
@@ -68,13 +67,13 @@ public class EventApi {
 	
 	@Operation(summary = "Scearch for event using event name.", description = "eventName is required as request parameter is required for this API, JWT(JSON Web Token) is required.")
 	@GetMapping("/events/search-name")
-	public ResponseEntity<EventMasterModel> viewEventByName(@RequestParam String eventName) {
+	public PaginationResponse<EventMasterModel> viewEventByName(@RequestParam String eventName, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-name: {}", eventName);
 
-		EventMasterModel eventResponse = eventService.getEventByName(eventName);
+		PaginationResponse<EventMasterModel> eventResponse = eventService.getEventByName(eventName, page, size);
 		log.debug("/get/response/api/events/search-name: {}", eventResponse);
 
-		return ResponseEntity.ok(eventResponse);
+		return eventResponse;
 	}
 
 	@Operation(summary = "Search for events of a specific date range.", description = "Provide a range of date from date upto date is required as request parameter is required format is yyyy-MM-dd HH:mm:ss, JWT(JSON Web Token) is required.")
