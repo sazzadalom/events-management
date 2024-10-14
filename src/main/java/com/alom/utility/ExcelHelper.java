@@ -15,9 +15,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.alom.events.model.AttendeeModel;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
-import com.alom.model.AttendeeModel;
 
 import lombok.extern.log4j.Log4j2;
 
