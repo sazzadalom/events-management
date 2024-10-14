@@ -23,6 +23,8 @@ public interface EventService {
 	public long getTotalEventCount();
 
 	public GenericResponse editEvent(Long eventId, String jsonData, MultipartFile mediaFile, MultipartFile excelFile);
+
+	public GenericResponse refresh();
 	
 
 }

@@ -25,6 +25,7 @@ import com.alom.payload.GenericResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -52,10 +53,10 @@ public class EventApi {
 
 	@Operation(summary = "Fetch all events", description = "Fetches all events available in the system.No parameter is required for this, JWT(JSON Web Token) is required.")
 	@GetMapping("/events")
-	public PaginationResponse<EventMasterModel> getPaginatedEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+	public PaginationResponse<EventMasterModel> getPaginatedEvents(@RequestParam(defaultValue = "1") @Positive(message = "page must be greater than 0") int page, @RequestParam(defaultValue = "10") int size) {
 
 		log.debug("/get/request/api/events page size : {} :{}", page, size);
-		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(page,size);
+		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(page-1,size);
 		log.debug("/get/response/api/events: {}", response);
 
 		return response;
@@ -69,10 +70,10 @@ public class EventApi {
 	
 	@Operation(summary = "Scearch for event using event name.", description = "eventName is required as request parameter is required for this API, JWT(JSON Web Token) is required.")
 	@GetMapping("/events/search-name")
-	public PaginationResponse<EventMasterModel> viewEventByName(@RequestParam String eventName, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+	public PaginationResponse<EventMasterModel> viewEventByName(@RequestParam String eventName, @RequestParam(defaultValue = "1") @Positive(message = "page must be greater than 0") int page, @RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-name: {}", eventName);
 
-		PaginationResponse<EventMasterModel> eventResponse = eventService.getEventByName(eventName, page, size);
+		PaginationResponse<EventMasterModel> eventResponse = eventService.getEventByName(eventName, page-1, size);
 		log.debug("/get/response/api/events/search-name: {}", eventResponse);
 
 		return eventResponse;
@@ -81,12 +82,12 @@ public class EventApi {
 	@Operation(summary = "Search for events of a specific date range.", description = "Provide a range of date from date upto date is required as request parameter is required format is yyyy-MM-dd HH:mm:ss, JWT(JSON Web Token) is required.")
 	@GetMapping("/events/search-date")
 	public PaginationResponse<EventMasterModel> viewEventByDate(@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date fromEventDate,
-			@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date uptoEventDate, @RequestParam(defaultValue = "0") int page,
+			@RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date uptoEventDate, @RequestParam(defaultValue = "1") @Positive(message = "page must be greater than 0") int page,
 			@RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-date-range: {} : {}", fromEventDate, uptoEventDate);
 
 		PaginationResponse<EventMasterModel> pageResponse = eventService.getEventBetween(fromEventDate, uptoEventDate,
-				page, size);
+				page-1, size);
 		log.debug("/get/response/api/events/search-date-range: {} ", pageResponse);
 
 		return pageResponse;
@@ -129,4 +130,12 @@ public class EventApi {
 		return ResponseEntity.ok(response);
 	}
 
+	@Operation(summary = "Refresh redis", description = "Refresh redis chash memory from here.")
+	@GetMapping("/events/refresh")
+	public ResponseEntity<GenericResponse> refresh() {
+		log.info("/get/request/api/events/refresh");
+		GenericResponse response = eventService.refresh();
+		log.info("/get/response/api/events/refresh:{}",response);
+		return ResponseEntity.ok(response);
+	}
 }
