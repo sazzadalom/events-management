@@ -1,4 +1,4 @@
-package com.alom.dao.entities;
+package com.alom.events.dao.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +39,7 @@ public class EventAttendeeEntity {
 	@Column(name = "business_title")
 	private String businessTitle;
 	
-	@Column(name = "city")
+	@Column(name = "attendee_city")
 	private String city;
 
 	@ManyToOne

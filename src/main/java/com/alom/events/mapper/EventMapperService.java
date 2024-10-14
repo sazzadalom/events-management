@@ -1,4 +1,4 @@
-package com.alom.mapper;
+package com.alom.events.mapper;
 
 import org.mapstruct.Mapper;
 

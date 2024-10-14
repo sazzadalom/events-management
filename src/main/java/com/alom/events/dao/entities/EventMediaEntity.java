@@ -1,4 +1,4 @@
-package com.alom.dao.entities;
+package com.alom.events.dao.entities;
 
 import java.sql.Blob;
 import java.util.Date;

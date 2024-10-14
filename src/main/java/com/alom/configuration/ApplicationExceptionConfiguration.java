@@ -31,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  * this class is used to handle globale exception
- * @author sazza
+ * @author sazzad
  * @version 1.0.0
  * @since 10-10-2024
  *

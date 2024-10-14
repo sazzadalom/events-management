@@ -42,7 +42,7 @@ public class SpringSecurityConfig {
 				.requestMatchers("/v3/api-docs/**").permitAll()
 			    .requestMatchers("/swagger-ui.html").permitAll()
 			    .requestMatchers("/swagger-ui/**").permitAll()
-				.requestMatchers("/api/events/add-edit","/api/events/remove").hasRole("ADMIN")
+				.requestMatchers("/api/events/add-edit","/api/events/remove","/api/events/edit").hasRole("ADMIN")
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
 		.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

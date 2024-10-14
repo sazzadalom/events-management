@@ -15,11 +15,14 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.alom.events.model.AttendeeModel;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.exception.FileNotFoundException;
-import com.alom.model.AttendeeModel;
+
+import lombok.extern.log4j.Log4j2;
 
 
+@Log4j2
 public class ExcelHelper {
 	
 	
@@ -34,7 +37,7 @@ public class ExcelHelper {
 
 		// WORKBOOK HEADER LIST THAT IS COMING FROM BULK UPLOAD.
 		List<String> uploadHeaderList = getUploadFileHeader(workbook);
-//		log.info("excel header size: {} | upload header size: {}", headerList.size(), uploadHeaderList.size());
+		log.info("excel header size: {} | upload header size: {}", headerList.size(), uploadHeaderList.size());
 
 		// IF VALIDATION OF SIZE OF EXCEL HEADER FAILS, WE ARE RETURNING THE RESPONSE AS FALSE.
 		if (uploadHeaderList.size() != headerList.size()) {
@@ -46,7 +49,7 @@ public class ExcelHelper {
 
 		for (int i = 0; i < uploadHeaderList.size(); ++i) {
 			if (!uploadHeaderList.get(i).trim().equals(headerList.get(i).trim())) {
-//				log.error("header content not equal at index: {} | incomming header content: {} with size: {} | exit excel header content: {} with size: {}", i, uploadHeaderList.get(i).trim(), uploadHeaderList.get(i).trim().length(), headerList.get(i).trim(), headerList.get(i).trim().length());
+				log.error("header content not equal at index: {} | incomming header content: {} with size: {} | exit excel header content: {} with size: {}", i, uploadHeaderList.get(i).trim(), uploadHeaderList.get(i).trim().length(), headerList.get(i).trim(), headerList.get(i).trim().length());
 				flag = true;
 				break;
 			}
@@ -133,5 +136,44 @@ public class ExcelHelper {
 	        } finally {
 	            workbook.close(); // Close the workbook
 	        }
-	    } 
+	    }
+
+	 public static List<AttendeeModel> takeInputDataFromExcel(Workbook workbook, List<String> attendeeUploadHeaders) {
+		List<AttendeeModel> eventAttendeeModelList = new ArrayList<>();
+		Iterator<Row> iteratorRow = workbook.getSheetAt(0).iterator();
+		iteratorRow.next();
+
+		while (iteratorRow.hasNext()) {
+
+			AttendeeModel eventAttendeeMode = AttendeeModel.builder().build();
+
+			Row row = iteratorRow.next();
+			DataFormatter dataFormatter = new DataFormatter();
+
+			for (int i = 0; i < attendeeUploadHeaders.size(); ++i) {
+				Cell cell = row.getCell(i);
+
+				switch (i) {
+				case 0:
+					eventAttendeeMode.setName(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 1:
+					eventAttendeeMode.setBusinessTitle(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 2:
+					eventAttendeeMode.setCity(dataFormatter.formatCellValue(cell).trim());
+					break;
+				case 3:
+					eventAttendeeMode.setContactNumber(dataFormatter.formatCellValue(cell).trim());
+					break;
+				default:
+					break;
+
+				}
+			}
+			eventAttendeeModelList.add(eventAttendeeMode);
+		}
+		return eventAttendeeModelList;
+
+	}
 }

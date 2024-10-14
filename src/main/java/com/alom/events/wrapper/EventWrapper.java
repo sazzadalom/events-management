@@ -1,6 +1,6 @@
-package com.alom.wrapper;
+package com.alom.events.wrapper;
 
-import com.alom.model.EventMasterModel;
+import com.alom.events.model.EventMasterModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;

@@ -12,6 +12,8 @@ import com.alom.login.model.Users;
 import com.alom.login.service.UsersService;
 import com.alom.payload.GenericResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/api/auth")
 public class LoginApi {
@@ -19,12 +21,14 @@ public class LoginApi {
 	@Autowired
 	private UsersService usersService;
 	
+	@Operation(summary = "Register a new user", description = "from here you can register a new user")
 	@PostMapping("/register")
 	public ResponseEntity<GenericResponse> register(@RequestBody Users users) {
 		GenericResponse response = usersService.register(users);
 		return ResponseEntity.ok(response);
 	}
 	
+	@Operation(summary = "Generate jwt token",description = "from here you can generate a login token for authentication & authotization.")
 	@PostMapping("/generate-token")
 	public String login(@RequestHeader("username") String username, @RequestHeader("userPassword") String userPassword) {
 		

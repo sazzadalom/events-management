@@ -1,24 +1,26 @@
-package com.alom.api;
+package com.alom.events.api;
 
 import java.io.IOException;
 import java.util.Date;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alom.annotations.ValidFileExtension;
-import com.alom.model.EventMasterModel;
-import com.alom.model.PaginationResponse;
+import com.alom.events.annotations.ValidFileExtension;
+import com.alom.events.model.EventMasterModel;
+import com.alom.events.model.PaginationResponse;
+import com.alom.events.service.EventService;
 import com.alom.payload.GenericResponse;
-import com.alom.service.EventService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,6 +39,7 @@ import lombok.extern.log4j.Log4j2;
  */
 
 @Log4j2
+@Validated
 @RestController
 @RequestMapping("/api")
 public class EventApi {
@@ -49,10 +52,10 @@ public class EventApi {
 
 	@Operation(summary = "Fetch all events", description = "Fetches all events available in the system.No parameter is required for this, JWT(JSON Web Token) is required.")
 	@GetMapping("/events")
-	public PaginationResponse<EventMasterModel> getPaginatedEvents(Pageable pageable) {
+	public PaginationResponse<EventMasterModel> getPaginatedEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
-		log.debug("/get/request/api/events: {}", pageable);
-		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(pageable);
+		log.debug("/get/request/api/events page : size {} {}", page, size);
+		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(page,size);
 		log.debug("/get/response/api/events: {}", response);
 
 		return response;
@@ -66,13 +69,13 @@ public class EventApi {
 	
 	@Operation(summary = "Scearch for event using event name.", description = "eventName is required as request parameter is required for this API, JWT(JSON Web Token) is required.")
 	@GetMapping("/events/search-name")
-	public ResponseEntity<EventMasterModel> viewEventByName(@RequestParam String eventName) {
+	public PaginationResponse<EventMasterModel> viewEventByName(@RequestParam String eventName, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 		log.debug("/get/request/api/events/search-name: {}", eventName);
 
-		EventMasterModel eventResponse = eventService.getEventByName(eventName);
+		PaginationResponse<EventMasterModel> eventResponse = eventService.getEventByName(eventName, page, size);
 		log.debug("/get/response/api/events/search-name: {}", eventResponse);
 
-		return ResponseEntity.ok(eventResponse);
+		return eventResponse;
 	}
 
 	@Operation(summary = "Search for events of a specific date range.", description = "Provide a range of date from date upto date is required as request parameter is required format is yyyy-MM-dd HH:mm:ss, JWT(JSON Web Token) is required.")
@@ -89,23 +92,36 @@ public class EventApi {
 		return pageResponse;
 	}
 
-	@Operation(summary = "Create event with upload attendees and media", description = "No parameter is required for this API, JWT(JSON Web Token) is required. Add event attendees file (xlsx). This functionality is restricted to admin users.")
+	@Operation(summary = "Create event with upload attendees and media", description = "No parameter is required for this API, Provide string of json data like {\"eventName\": \"Happy Holi\",\"eventUrl\": \"www.aurusit.com\",\"eventDate\": \"2024-10-16 05:10:31\"}")
 	@PostMapping(value = "/events/add-edit", consumes = "multipart/form-data")
 	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData,
 			@Parameter(description = "Select a image or video file")
-			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
-			@Parameter(description = "Select a XLSX file")
-			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
+			@RequestParam("file") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
+			@Parameter(description = " Add event attendees file (xlsx).")
+			@RequestParam("file") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 
 		
-		GenericResponse response = eventService.addOrUpdateEvent(mediaFile, excelFile, jsonData);
+		GenericResponse response = eventService.addEvent(mediaFile, excelFile, jsonData);
 		log.debug("/post/response/events/add-edit: {}", response);
 
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "Remove event using event name", description = "Remove events from the inventory. This operation should also be restricted to admin users. eventName is required as request parameter is required for this, JWT(JSON Web Token) is required.")
+	
+	@Operation(summary = "Edit an existing event")
+	@PutMapping(value = "/api/events/edit/{eventId}", consumes = "multipart/form-data")
+	public ResponseEntity<GenericResponse> updateEvent(@PathVariable("eventId") Long eventId, @RequestParam("jsonData") String jsonData,
+	@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
+	@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
+		log.debug("/post/request/api/events/edit eventId:{} jsonData:{}",eventId, jsonData);
+		GenericResponse response = eventService.editEvent(eventId, jsonData, mediaFile, excelFile);
+		log.debug("/post/response/events/edit: {}", response);
+		return ResponseEntity.ok(response);
+	}
+	
+	
+	@Operation(summary = "Remove event using event name", description = "Remove events from the inventory. This operation should also be restricted to admin users. eventName is required as request parameter is required for this API")
 	@DeleteMapping("/events/remove")
 	public ResponseEntity<GenericResponse> removeEvent(@RequestParam String eventName) {
 		log.debug("/delete/request/api/events/remove: {}", eventName);

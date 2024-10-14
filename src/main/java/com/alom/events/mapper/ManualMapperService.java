@@ -1,4 +1,4 @@
-package com.alom.mapper;
+package com.alom.events.mapper;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -9,32 +9,30 @@ import java.util.List;
 
 import org.hibernate.engine.jdbc.BlobProxy;
 
-import com.alom.dao.entities.EventAttendeeEntity;
-import com.alom.dao.entities.EventMasterEntity;
-import com.alom.dao.entities.EventMediaEntity;
-import com.alom.model.AttendeeModel;
-import com.alom.model.EventMasterModel;
+import com.alom.events.dao.entities.EventAttendeeEntity;
+import com.alom.events.dao.entities.EventMasterEntity;
+import com.alom.events.dao.entities.EventMediaEntity;
+import com.alom.events.model.AttendeeModel;
+import com.alom.events.model.EventMasterModel;
 
 public class ManualMapperService {
 
-	public static EventMasterModel convertToDto(EventMasterEntity entity) {
-        EventMasterModel dto = new EventMasterModel();
-        dto.setEventId(entity.getEventId());
-        dto.setEventName(entity.getEventName());
-        dto.setEventUrl(entity.getEventUrl());
-        dto.setEventDate(entity.getEventDate());
-        dto.setEventCreatedAt(entity.getEventCreatedAt());
+	public static EventMasterModel convertToModel(EventMasterEntity entity) {
+        EventMasterModel model = new EventMasterModel();
+        model.setEventId(entity.getEventId());
+        model.setEventName(entity.getEventName());
+        model.setEventUrl(entity.getEventUrl());
+        model.setEventDate(entity.getEventDate());
+        model.setEventCreatedAt(entity.getEventCreatedAt());
 
         if (entity.getEventMediaEntity() != null) {
-        	dto.setFileId(entity.getEventMediaEntity().getFileId());
-            dto.setFileType(entity.getEventMediaEntity().getFileType());
-            dto.setFileName(entity.getEventMediaEntity().getFileName());
+        	model.setFileId(entity.getEventMediaEntity().getFileId());
+        	model.setFileType(entity.getEventMediaEntity().getFileType());
+        	model.setFileName(entity.getEventMediaEntity().getFileName());
 
-//            dto.setFileDate(entity.getEventMediaEntity().getFileData());
 			try {
-				dto.setFileDate(entity.getEventMediaEntity().getFileData().getBinaryStream().readAllBytes());
+				model.setFileDate(entity.getEventMediaEntity().getFileData().getBinaryStream().readAllBytes());
 			} catch (IOException | SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
  /* 
@@ -66,20 +64,21 @@ public class ManualMapperService {
         	attendeeDtoList .add (new AttendeeModel(attendee.getAttId(),attendee.getAttName(),attendee.getBusinessTitle(),attendee.getCity(),attendee.getContactNumber()));
         	
         });
-        dto.setAttendeeList(attendeeDtoList);
+        model.setAttendeeList(attendeeDtoList);
 
-        return dto;
+        return model;
     }
 	
 	public static EventMasterEntity convertToEntity( EventMasterModel model) {
 		Date createdOn = new Date();
-		EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileName(model.getFileName()).fileType(model.getFileType()).fileData(BlobProxy.generateProxy(model.getFileDate())).uploadedAt(createdOn).build();
+		EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileId(model.getFileId()).fileName(model.getFileName()).fileType(model.getFileType()).fileData(BlobProxy.generateProxy(model.getFileDate())).uploadedAt(createdOn).build();
 		List<EventAttendeeEntity> eventAttendeeEntityList = new ArrayList<>();
 		model.getAttendeeList().forEach(attendee -> {
-			eventAttendeeEntityList.add(EventAttendeeEntity.builder().attName(attendee.getName()).contactNumber(attendee.getContactNumber()).businessTitle(attendee.getBusinessTitle()).city(attendee.getCity()).build());
+			eventAttendeeEntityList.add(EventAttendeeEntity.builder().attId(attendee.getAttId()).attName(attendee.getName()).contactNumber(attendee.getContactNumber()).businessTitle(attendee.getBusinessTitle()).city(attendee.getCity()).build());
 		});
 		
 		EventMasterEntity entity = EventMasterEntity.builder()
+				.eventId(model.getEventId())
 				.eventName(model.getEventName())
 				.eventUrl(model.getEventUrl())
 				.eventDate(model.getEventDate())

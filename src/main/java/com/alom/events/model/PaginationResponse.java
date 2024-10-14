@@ -1,4 +1,4 @@
-package com.alom.model;
+package com.alom.events.model;
 
 import java.io.Serializable;
 import java.util.List;

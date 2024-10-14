@@ -1,4 +1,4 @@
-package com.alom.dao.repositories;
+package com.alom.events.dao.repositories;
 
 import java.util.Date;
 
@@ -6,13 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.alom.dao.entities.EventMasterEntity;
+import com.alom.events.dao.entities.EventMasterEntity;
 
 public interface EventMasterRepository extends JpaRepository<EventMasterEntity, Long> {
 
 	Page<EventMasterEntity> findAll(Pageable pageable);  
 
-	EventMasterEntity findByEventName(String eventName);
+	Page<EventMasterEntity> findByEventName(String eventName, Pageable pageable);
 	
 	Page<EventMasterEntity> findByEventDateBetween(Date fromEventDate, Date uptoEventDate, Pageable pageable);
 
