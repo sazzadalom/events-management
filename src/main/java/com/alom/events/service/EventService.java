@@ -16,11 +16,13 @@ public interface EventService {
 
 	public PaginationResponse<EventMasterModel> getEventBetween(Date fromEventDate, Date uptoEventDate, int page, int size);
 
-	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, String jsonData);
+	public GenericResponse addEvent(MultipartFile mediaFile, MultipartFile excelFile, String jsonData);
 
 	public GenericResponse removeEventByName(String eventName);
 
 	public long getTotalEventCount();
+
+	public GenericResponse editEvent(Long eventId, String jsonData, MultipartFile mediaFile, MultipartFile excelFile);
 	
 
 }

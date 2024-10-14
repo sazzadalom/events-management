@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,13 +96,13 @@ public class EventApi {
 	@PostMapping(value = "/events/add-edit", consumes = "multipart/form-data")
 	public ResponseEntity<GenericResponse> addEvent(@RequestParam("jsonData") String jsonData,
 			@Parameter(description = "Select a image or video file")
-			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
+			@RequestParam("file") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
 			@Parameter(description = " Add event attendees file (xlsx).")
-			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
+			@RequestParam("file") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
 		log.debug("/post/request/api/events/add-edit: {}", jsonData);
 
 		
-		GenericResponse response = eventService.addOrUpdateEvent(mediaFile, excelFile, jsonData);
+		GenericResponse response = eventService.addEvent(mediaFile, excelFile, jsonData);
 		log.debug("/post/response/events/add-edit: {}", response);
 
 		return ResponseEntity.ok(response);
@@ -109,16 +110,14 @@ public class EventApi {
 
 	
 	@Operation(summary = "Edit an existing event")
-	@PutMapping("/events/edit")
-	public ResponseEntity<GenericResponse> updateEvent(@RequestParam("jsonData") String jsonData,
-			@Parameter(description = "Select a image or video file")
-			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
-			@Parameter(description = " Add event attendees file (xlsx).")
-			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
-		log.debug("/post/request/api/events/add-edit: {}", jsonData);
-		
-		return null;
-		
+	@PutMapping(value = "/api/events/edit/{eventId}", consumes = "multipart/form-data")
+	public ResponseEntity<GenericResponse> updateEvent(@PathVariable("eventId") Long eventId, @RequestParam("jsonData") String jsonData,
+	@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}) MultipartFile mediaFile,
+	@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}) MultipartFile excelFile) throws IOException {
+		log.debug("/post/request/api/events/edit eventId:{} jsonData:{}",eventId, jsonData);
+		GenericResponse response = eventService.editEvent(eventId, jsonData, mediaFile, excelFile);
+		log.debug("/post/response/events/edit: {}", response);
+		return ResponseEntity.ok(response);
 	}
 	
 	

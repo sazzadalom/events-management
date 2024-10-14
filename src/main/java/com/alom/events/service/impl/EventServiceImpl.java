@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import com.alom.events.service.RedisService;
 import com.alom.exception.ExcelFileReadWriteException;
 import com.alom.payload.GenericResponse;
 import com.alom.utility.ExcelHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
@@ -215,7 +218,7 @@ public class EventServiceImpl implements EventService {
 	}
 	
 	@Override
-	public GenericResponse addOrUpdateEvent(MultipartFile mediaFile, MultipartFile excelFile, String jsonData) {
+	public GenericResponse addEvent(MultipartFile mediaFile, MultipartFile excelFile, String jsonData) {
 
 		
 		try (InputStream inputStreamForExcelFile = excelFile.getInputStream();
@@ -310,6 +313,24 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public long getTotalEventCount() {
 		return eventMasterRepository.count();
+	}
+
+	@Override
+	public GenericResponse editEvent(Long eventId, String jsonData, MultipartFile mediaFile, MultipartFile excelFile) {
+		log.debug("jsonData:{}",jsonData);
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			@SuppressWarnings("unchecked")
+			Map<String, Object> jsonDataMap = objectMapper.readValue(jsonData, HashMap.class);
+			jsonDataMap.put("eventId", eventId);
+			
+			jsonData = objectMapper.writeValueAsString(jsonDataMap);
+			
+		} catch (JsonProcessingException e) {
+		
+		}
+
+		return addEvent(mediaFile, excelFile, jsonData);
 	}
 
 }

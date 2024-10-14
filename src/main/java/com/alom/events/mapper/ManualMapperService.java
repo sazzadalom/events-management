@@ -71,13 +71,14 @@ public class ManualMapperService {
 	
 	public static EventMasterEntity convertToEntity( EventMasterModel model) {
 		Date createdOn = new Date();
-		EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileName(model.getFileName()).fileType(model.getFileType()).fileData(BlobProxy.generateProxy(model.getFileDate())).uploadedAt(createdOn).build();
+		EventMediaEntity eventMediaEntity = EventMediaEntity.builder().fileId(model.getFileId()).fileName(model.getFileName()).fileType(model.getFileType()).fileData(BlobProxy.generateProxy(model.getFileDate())).uploadedAt(createdOn).build();
 		List<EventAttendeeEntity> eventAttendeeEntityList = new ArrayList<>();
 		model.getAttendeeList().forEach(attendee -> {
-			eventAttendeeEntityList.add(EventAttendeeEntity.builder().attName(attendee.getName()).contactNumber(attendee.getContactNumber()).businessTitle(attendee.getBusinessTitle()).city(attendee.getCity()).build());
+			eventAttendeeEntityList.add(EventAttendeeEntity.builder().attId(attendee.getAttId()).attName(attendee.getName()).contactNumber(attendee.getContactNumber()).businessTitle(attendee.getBusinessTitle()).city(attendee.getCity()).build());
 		});
 		
 		EventMasterEntity entity = EventMasterEntity.builder()
+				.eventId(model.getEventId())
 				.eventName(model.getEventName())
 				.eventUrl(model.getEventUrl())
 				.eventDate(model.getEventDate())
