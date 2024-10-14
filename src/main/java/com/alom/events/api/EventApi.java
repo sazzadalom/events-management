@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -106,6 +107,21 @@ public class EventApi {
 		return ResponseEntity.ok(response);
 	}
 
+	
+	@Operation(summary = "Edit an existing event")
+	@PutMapping("/events/edit")
+	public ResponseEntity<GenericResponse> updateEvent(@RequestParam("jsonData") String jsonData,
+			@Parameter(description = "Select a image or video file")
+			@RequestParam("mediaFile") @Valid @ValidFileExtension(acceptedExtensions = {"jpg", "jpeg", "mp4"}, message = "Failed to create event. Check the type of uploaded file. Acceptable jpg,jpeg,mp4") MultipartFile mediaFile,
+			@Parameter(description = " Add event attendees file (xlsx).")
+			@RequestParam("excelFile") @Valid @ValidFileExtension(acceptedExtensions = {"xlsx"}, message = "Failed to create event. Check the type of uploaded file. Acceptable xlsx") MultipartFile excelFile) throws IOException {
+		log.debug("/post/request/api/events/add-edit: {}", jsonData);
+		
+		return null;
+		
+	}
+	
+	
 	@Operation(summary = "Remove event using event name", description = "Remove events from the inventory. This operation should also be restricted to admin users. eventName is required as request parameter is required for this API")
 	@DeleteMapping("/events/remove")
 	public ResponseEntity<GenericResponse> removeEvent(@RequestParam String eventName) {
