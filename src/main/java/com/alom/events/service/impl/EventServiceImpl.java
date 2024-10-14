@@ -67,7 +67,8 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public PaginationResponse<EventMasterModel> getAllEvents(int page, int size) {
 
-		PaginationResponse<EventMasterModel> response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY);
+		 String fieldKey = ApiResponseMessage.REDIS_FIND_ALL_KEY + page + size;
+		PaginationResponse<EventMasterModel> response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey);
 			 
 		/**
 		 * Check here if it is not in REDIS the search from database
@@ -81,7 +82,7 @@ public class EventServiceImpl implements EventService {
 				 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
 				 log.info("################### fetch data from database ###################");
 				 
-				 redisService.addHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, ApiResponseMessage.REDIS_FIND_ALL_KEY, response);
+				 redisService.addHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey, response);
 		}
 		 
 
@@ -113,11 +114,13 @@ public class EventServiceImpl implements EventService {
 
 	@Override
 	public PaginationResponse<EventMasterModel> getEventByName(String eventName, int page, int size) {
+		
+		String fieldKey = eventName + page + size;
 		// Create a PageRequest object for pagination
 		PageRequest pageRequest = PageRequest.of(page, size);		
 		
 		@SuppressWarnings("unchecked")
-		PaginationResponse<EventMasterModel>  response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, eventName);
+		PaginationResponse<EventMasterModel>  response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey);
 		
 	/**
 	 * Check here if it is not in REDIS the search from database
@@ -133,7 +136,7 @@ public class EventServiceImpl implements EventService {
 			 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
 			 log.info("################### fetch data from database ###################");
 			 
-			 redisService.addHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, eventName, response);
+			 redisService.addHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey, response);
 	}
 	 
 
@@ -170,12 +173,14 @@ public class EventServiceImpl implements EventService {
 		
 		String fromtDate = dateFormat.format(fromEventDate) ;
 		String uptoDate = dateFormat.format(uptoEventDate);
-		String fieldKey = fromtDate + uptoDate;
+		String fieldKey = fromtDate + uptoDate + page + size
+				
+				;
 		
 		// Create a PageRequest object for pagination
 		PageRequest pageRequest = PageRequest.of(page, size);		
 		
-		PaginationResponse<EventMasterModel>  response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, fieldKey);
+		PaginationResponse<EventMasterModel>  response = (PaginationResponse<EventMasterModel>) redisService.retrieveHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey);
 	
 	/**
 	 * Check here if it is not in REDIS the search from database
@@ -188,7 +193,7 @@ public class EventServiceImpl implements EventService {
 			 response = new PaginationResponse<>(entityPage.getTotalElements(),entityPage.getContent(), entityPage.getTotalPages());
 			 log.info("################### fetch data from database");
 			 
-			 redisService.addHashObject(ApiResponseMessage.REDIS_PARTITION_KEY, fieldKey, response);
+			 redisService.addHashObject(ApiResponseMessage.REDIS_HASH_KEY, fieldKey, response);
 	}
 	 
 
@@ -333,6 +338,12 @@ public class EventServiceImpl implements EventService {
 		}
 
 		return addEvent(mediaFile, excelFile, jsonData);
+	}
+
+	@Override
+	public GenericResponse refresh() {
+		redisService.clear();
+		return GenericResponse.builder().result(Result.SUCCESS).responseCode(ApiResponseCode.SUCCESS).message(ApiResponseMessage.REDIS_CLEAR_SUCCESSFULLY).build();
 	}
 
 }
