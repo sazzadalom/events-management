@@ -54,7 +54,7 @@ public class EventApi {
 	@GetMapping("/events")
 	public PaginationResponse<EventMasterModel> getPaginatedEvents(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
-		log.debug("/get/request/api/events page : size {} {}", page, size);
+		log.debug("/get/request/api/events page size : {} :{}", page, size);
 		PaginationResponse<EventMasterModel> response = eventService.getAllEvents(page,size);
 		log.debug("/get/response/api/events: {}", response);
 
