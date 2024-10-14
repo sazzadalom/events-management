@@ -1,5 +1,6 @@
 package com.alom.events.service.impl;
 
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -27,4 +28,7 @@ public class RedisServiceImpl implements RedisService {
 		return redisTemplate.opsForHash().get(hashKey, filedKey);
 	}
 
+	public void clear() {
+		redisTemplate.getConnectionFactory().getConnection().flushDb();
+	}
 }

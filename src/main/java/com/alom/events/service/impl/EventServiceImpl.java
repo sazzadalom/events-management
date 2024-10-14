@@ -293,8 +293,10 @@ public class EventServiceImpl implements EventService {
 			log.debug("ioException occured:{}", ioException.getMessage());
 
 		}
-
-		return GenericResponse.builder().result("success").responseCode("00").message("event created successfully.")
+		
+		redisService.clear();
+		
+		return GenericResponse.builder().result("success").responseCode("00").message("event modification request successfull.")
 				.build();
 	}
 
@@ -304,9 +306,9 @@ public class EventServiceImpl implements EventService {
 		long totalCount = eventMasterRepository.findByEventName(eventName, PageRequest.of(0, 10)).getTotalElements();
 		if (totalCount > 0) {
 			eventMasterRepository.deleteByEventName(eventName);
+			redisService.clear();
 			return GenericResponse.builder().result(Result.SUCCESS).responseCode(ApiResponseCode.SUCCESS).message(ApiResponseMessage.EVENT_REMOVED_SUCCESSFULLY).build();
 		}
-		 
 		 return GenericResponse.builder().result(Result.FAILED).responseCode(ApiResponseCode.FAILED).message(ApiResponseMessage.EVENT_NOT_FOUNDED).build();
 	}
 
